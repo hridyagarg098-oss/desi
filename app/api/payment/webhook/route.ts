@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyWebhookSignature } from '@/lib/payment/uropay'
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
 
-const supabaseAdmin = createSupabaseAdmin(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Lazily create Supabase client to avoid build-time crashes
+function getSupabaseAdmin() {
+  return createSupabaseAdmin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 /**
  * UROPay Webhook
@@ -52,6 +55,7 @@ export async function POST(request: NextRequest) {
     // Find the pending subscription that matches this reference
     // UROPay doesn't pass merchantOrderId in webhook body — match by referenceNumber
     // The order was updated via /order/update with this referenceNumber
+    const supabaseAdmin = getSupabaseAdmin()
     const { data: subs } = await supabaseAdmin
       .from('subscriptions')
       .select('id, user_id, status, europay_order_id')

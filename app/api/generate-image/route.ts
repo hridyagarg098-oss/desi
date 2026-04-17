@@ -6,37 +6,126 @@ import { checkUsageLimit, type UsageProfile } from '@/lib/payment/limits'
 
 export const maxDuration = 60
 
+// ─── Prompt builder ───────────────────────────────────────────────────────────
+// Removed 500-char truncation — it was killing quality by cutting the prompt short
+
 function buildEnhancedPrompt(basePrompt: string, scene: string): string {
-  const quality = 'photorealistic, 8K, RAW photo, professional photography, 85mm lens, soft bokeh, ultra-detailed'
-  const subject = 'beautiful Indian woman, correct anatomy, proportional body, natural skin texture'
-  const negative = 'no deformities, no extra limbs, no blurry face, no cartoon, no nudity, no explicit'
-  const sceneText = scene ? `${scene},` : ''
-  return `${sceneText} ${basePrompt}, ${quality}, ${subject}, ${negative}`
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 500)
+  const sceneText = scene ? `${scene}, ` : ''
+  // Keep the full prompt — FLUX handles long prompts well
+  return `${sceneText}${basePrompt}`.replace(/\s+/g, ' ').trim()
 }
 
+// ─── Provider 1: Together AI (FLUX.1-schnell) — best quality, fast ─────────
+async function generateWithTogether(prompt: string): Promise<string | null> {
+  const apiKey = process.env.TOGETHER_API_KEY
+  if (!apiKey) return null
+
+  try {
+    const res = await fetch('https://api.together.ai/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'black-forest-labs/FLUX.1-schnell',
+        prompt,
+        width: 768,
+        height: 1024,
+        steps: 4,
+        n: 1,
+        response_format: 'url',
+      }),
+      signal: AbortSignal.timeout(30000),
+    })
+
+    if (!res.ok) {
+      const errText = await res.text()
+      console.warn('[ImageGen] Together AI failed:', res.status, errText.slice(0, 200))
+      return null
+    }
+
+    const data = await res.json()
+    const url = data?.data?.[0]?.url
+    if (url) {
+      console.log('[ImageGen] ✅ Together AI success')
+      return url
+    }
+    return null
+  } catch (e) {
+    console.error('[ImageGen] Together AI error:', e)
+    return null
+  }
+}
+
+// ─── Provider 2: Fal.ai (FLUX.1-schnell) — ultra-fast alternative ──────────
+async function generateWithFal(prompt: string): Promise<string | null> {
+  const apiKey = process.env.FAL_API_KEY
+  if (!apiKey) return null
+
+  try {
+    // Fal.ai fast queue for Flux Schnell
+    const res = await fetch('https://fal.run/fal-ai/flux/schnell', {
+      method: 'POST',
+      headers: {
+        Authorization: `Key ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt,
+        image_size: { width: 768, height: 1024 },
+        num_inference_steps: 4,
+        num_images: 1,
+        enable_safety_checker: false,
+      }),
+      signal: AbortSignal.timeout(30000),
+    })
+
+    if (!res.ok) {
+      console.warn('[ImageGen] Fal.ai failed:', res.status)
+      return null
+    }
+
+    const data = await res.json()
+    const url = data?.images?.[0]?.url
+    if (url) {
+      console.log('[ImageGen] ✅ Fal.ai success')
+      return url
+    }
+    return null
+  } catch (e) {
+    console.error('[ImageGen] Fal.ai error:', e)
+    return null
+  }
+}
+
+// ─── Provider 3: Pollinations.ai — truly free, unlimited, no key needed ────
 async function generateWithPollinations(prompt: string): Promise<string | null> {
   try {
-    const encoded = encodeURIComponent(prompt)
     const seed = Math.floor(Math.random() * 1000000)
-    const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&seed=${seed}&model=flux&nologo=true`
-    console.log('[ImageGen] Calling Pollinations.ai:', url.slice(0, 120) + '...')
+    // Use a shorter prompt for Pollinations (URL length limit)
+    const shortPrompt = prompt.slice(0, 600)
+    const encoded = encodeURIComponent(shortPrompt)
+    const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&seed=${seed}&model=flux&nologo=true&enhance=true`
+
+    console.log('[ImageGen] Calling Pollinations.ai...')
     const res = await fetch(url, {
       method: 'GET',
-      headers: { 'Accept': 'image/*' },
+      headers: { Accept: 'image/*' },
       signal: AbortSignal.timeout(55000),
     })
+
     if (!res.ok) {
       console.warn('[ImageGen] Pollinations failed:', res.status)
       return null
     }
+
     const contentType = res.headers.get('content-type') || ''
     if (!contentType.startsWith('image/')) {
       console.warn('[ImageGen] Pollinations returned non-image:', contentType)
       return null
     }
+
     console.log('[ImageGen] ✅ Pollinations success')
     return url
   } catch (e) {
@@ -45,41 +134,7 @@ async function generateWithPollinations(prompt: string): Promise<string | null> 
   }
 }
 
-async function generateWithGeminiFallback(prompt: string): Promise<string | null> {
-  const apiKeys = [
-    process.env.GEMINI_API_KEY,
-    process.env.GEMINI_API_KEY_2,
-  ].filter(Boolean) as string[]
-
-  const model = 'gemini-2.0-flash-preview-image-generation'
-  for (const apiKey of apiKeys) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
-      const body = {
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
-      }
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(30000),
-      })
-      if (!res.ok) { console.warn('[ImageGen] Gemini returned', res.status); continue }
-      const data = await res.json()
-      interface GeminiPart { inlineData?: { mimeType: string; data: string }; text?: string }
-      const parts: GeminiPart[] = data?.candidates?.[0]?.content?.parts ?? []
-      const imgPart = parts.find((p) => p?.inlineData?.mimeType?.startsWith('image/'))
-      if (imgPart?.inlineData?.data) {
-        const { mimeType, data: b64 } = imgPart.inlineData
-        return `data:${mimeType};base64,${b64}`
-      }
-    } catch (e) {
-      console.warn('[ImageGen] Gemini fallback error:', e)
-    }
-  }
-  return null
-}
+// ─── Main route ───────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   try {
@@ -87,7 +142,7 @@ export async function POST(req: NextRequest) {
     const { characterId, chatId } = body
     const customScene: string = body.customPrompt || body.customScenario || ''
 
-    // ── Auth + limit check ─────────────────────────────────────────────────────
+    // ── Auth + limit check ──────────────────────────────────────────────────
     const supabase = await createClient()
     const authResult = await Promise.race([
       supabase.auth.getUser(),
@@ -132,7 +187,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── Resolve character ─────────────────────────────────────────────────────
+    // ── Resolve character ───────────────────────────────────────────────────
     let character = PREMADE_CHARACTERS.find(
       (c) => c.id === characterId || c.name.toLowerCase() === characterId?.toLowerCase()
     )
@@ -141,11 +196,22 @@ export async function POST(req: NextRequest) {
     const basePrompt = buildImagePrompt(character, '')
     const finalPrompt = buildEnhancedPrompt(basePrompt, customScene)
 
-    // ── Generate ──────────────────────────────────────────────────────────────
-    let imageUrl = await generateWithPollinations(finalPrompt)
+    // ── Generate: Together AI → Fal.ai → Pollinations ──────────────────────
+    let imageUrl: string | null = null
+    let provider = ''
+
+    imageUrl = await generateWithTogether(finalPrompt)
+    if (imageUrl) { provider = 'together' }
+
     if (!imageUrl) {
-      console.log('[ImageGen] Pollinations failed, trying Gemini fallback...')
-      imageUrl = await generateWithGeminiFallback(finalPrompt)
+      imageUrl = await generateWithFal(finalPrompt)
+      if (imageUrl) { provider = 'fal' }
+    }
+
+    if (!imageUrl) {
+      console.log('[ImageGen] Paid APIs unavailable, falling back to Pollinations...')
+      imageUrl = await generateWithPollinations(finalPrompt)
+      if (imageUrl) { provider = 'pollinations' }
     }
 
     if (!imageUrl) {
@@ -155,15 +221,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // ── Save record + increment images_today ──────────────────────────────────
+    console.log(`[ImageGen] ✅ Image served via ${provider}`)
+
+    // ── Save record + increment images_today ────────────────────────────────
     if (user && profile) {
-      // Await the increment so concurrent requests can't bypass the limit
-      const { error: imgUpdateErr } = await supabase.from('profiles')
+      const { error: imgUpdateErr } = await supabase
+        .from('profiles')
         .update({ images_today: (profile.images_today ?? 0) + 1 })
         .eq('id', user.id)
       if (imgUpdateErr) console.error('[ImageGen] images_today update error:', imgUpdateErr.message)
 
-      // Log to generated_images (best-effort, non-blocking is fine)
       supabase.from('generated_images').insert({
         user_id: user.id,
         character_id: character.id,
@@ -173,16 +240,17 @@ export async function POST(req: NextRequest) {
       }).then(() => {})
     }
 
+    const planLimits: Record<string, number> = { free: 2, trial: 6, premium: 30, pro: 9999 }
+    const limit = planLimits[profile?.plan ?? 'free'] ?? 2
     const imagesLeft = profile
-      ? Math.max(0, (profile.images_today ?? 0) === 0
-          ? (profile.plan === 'free' ? 2 : profile.plan === 'trial' ? 6 : 30) - 1
-          : (profile.plan === 'free' ? 2 : profile.plan === 'trial' ? 6 : 30) - (profile.images_today + 1))
+      ? Math.max(0, limit - ((profile.images_today ?? 0) + 1))
       : null
 
     return NextResponse.json({
       image_url: imageUrl,
       imagesLeft,
       imagesUsed: profile ? (profile.images_today ?? 0) + 1 : null,
+      provider, // helpful for debugging
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'

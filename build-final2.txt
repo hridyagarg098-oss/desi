@@ -1,0 +1,96 @@
+
+> desidarling@1.0.0 build
+> next build
+
+  ??? Next.js 15.0.0
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ??? Compiled successfully
+   Linting and checking validity of types ...
+ ??? ESLint: Invalid Options: - Unknown options: useEslintrc, extensions - 'extensions' has been removed.
+   Collecting page data ...
+   Generating static pages (0/20) ...
+ ??? Unsupported metadata themeColor is configured in metadata export in /_not-found. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata viewport is configured in metadata export in /_not-found. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata themeColor is configured in metadata export in /age-gate. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata viewport is configured in metadata export in /age-gate. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata themeColor is configured in metadata export in /. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+   Generating static pages (5/20) 
+ ??? Unsupported metadata themeColor is configured in metadata export in /create. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata viewport is configured in metadata export in /create. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata themeColor is configured in metadata export in /explore. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata viewport is configured in metadata export in /explore. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata themeColor is configured in metadata export in /my-darlings. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata viewport is configured in metadata export in /my-darlings. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata themeColor is configured in metadata export in /login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata viewport is configured in metadata export in /login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+   Generating static pages (10/20) 
+ ??? Unsupported metadata themeColor is configured in metadata export in /profile. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata viewport is configured in metadata export in /profile. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata themeColor is configured in metadata export in /settings. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata viewport is configured in metadata export in /settings. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata themeColor is configured in metadata export in /signup. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata viewport is configured in metadata export in /signup. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+   Generating static pages (15/20) 
+ ??? Unsupported metadata themeColor is configured in metadata export in /pricing. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Unsupported metadata viewport is configured in metadata export in /pricing. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ??? Generating static pages (20/20)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+??? ??? /                                    9.51 kB         154 kB
+??? ??? /_not-found                          897 B          99.9 kB
+??? ??? /age-gate                            2.95 kB         138 kB
+??? ?? /api/characters                      156 B          99.2 kB
+??? ?? /api/chat                            156 B          99.2 kB
+??? ?? /api/chats                           156 B          99.2 kB
+??? ?? /api/chats/[chatId]                  156 B          99.2 kB
+??? ?? /api/generate-image                  156 B          99.2 kB
+??? ?? /auth/callback                       156 B          99.2 kB
+??? ?? /auth/signout                        156 B          99.2 kB
+??? ?? /call/[characterId]                  5.3 kB          141 kB
+??? ?? /chat/[characterId]                  7.31 kB         160 kB
+??? ?? /create                              5.43 kB         149 kB
+??? ?? /explore                             4.33 kB         157 kB
+??? ??? /login                               3.4 kB          209 kB
+??? ?? /my-darlings                         3.61 kB         148 kB
+??? ?? /pricing                             2.55 kB         138 kB
+??? ?? /profile                             4.04 kB         201 kB
+??? ?? /settings                            2.52 kB         208 kB
+??? ??? /signup                              3.75 kB         209 kB
++ First Load JS shared by all            99 kB
+  ??? chunks/215-f0e0a5a24ff7ebe1.js       44.5 kB
+  ??? chunks/4bd1b696-b4a16f3c3010c3bb.js  52.6 kB
+  ??? other shared chunks (total)          1.91 kB
+
+
+?? Middleware                             84 kB
+
+???  (Static)   prerendered as static content
+??  (Dynamic)  server-rendered on demand
+

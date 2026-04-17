@@ -1,0 +1,16 @@
+{
+  "name": "DesiDarling",
+  "short_name": "DesiDarling",
+  "description": "Your AI companion",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0008",
+  "theme_color": "#C4934A",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

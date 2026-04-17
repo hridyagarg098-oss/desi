@@ -1,0 +1,355 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════
+   NEON DESI DARK — Design Tokens
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  /* Core palette */
+  --noir:        #080407;
+  --abyss:       #0C0008;
+  --deep-maroon: #1A0010;
+  --maroon:      #8B1538;
+  --maroon-glow: #C0274A;
+  --gold:        #C4934A;
+  --gold-bright: #E8B060;
+  --gold-pale:   #F5D99A;
+  --ivory:       #F8EED8;
+  --rose-dust:   #B05070;
+
+  /* Glow radii */
+  --glow-maroon: 0 0 30px rgba(139,21,56,0.55);
+  --glow-gold:   0 0 25px rgba(196,147,74,0.50);
+  --glow-gold-lg:0 0 55px rgba(196,147,74,0.35);
+
+  /* Surfaces */
+  --glass:       rgba(255,255,255,0.04);
+  --glass-md:    rgba(255,255,255,0.08);
+  --glass-heavy: rgba(255,255,255,0.12);
+  --border-dim:  rgba(255,255,255,0.07);
+  --border-gold: rgba(196,147,74,0.25);
+
+  /* Typography — wired from next/font CSS variables */
+  --font-display: var(--font-display, 'Playfair Display', Georgia, serif);
+  --font-body:    var(--font-body, 'DM Sans', system-ui, sans-serif);
+}
+
+/* ─── Reset & Base ────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.65;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  background: var(--abyss);
+  color: var(--ivory);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* Global ambient gradient behind everything */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(139,21,56,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 90% 90%, rgba(196,147,74,0.10) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Typography scale */
+h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; letter-spacing: -0.02em; }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.5rem, 3vw, 2.25rem); line-height: 1.2; letter-spacing: -0.01em; }
+h3 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.2rem, 2.5vw, 1.75rem); line-height: 1.25; }
+h4 { font-family: var(--font-display); font-weight: 600; font-size: 1.25rem; line-height: 1.3; }
+h5, h6 { font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; }
+p  { font-size: 0.9375rem; line-height: 1.7; color: rgba(248,238,216,0.85); }
+small { font-size: 0.8125rem; }
+
+/* ─── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; background: transparent; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(196,147,74,0.25); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(196,147,74,0.50); }
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENTS
+   ═══════════════════════════════════════════════════════════════ */
+@layer components {
+
+  /* ── Buttons ─────────────────────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           rounded-full px-6 py-3 text-sm font-semibold text-white
+           transition-all duration-300 active:scale-95
+           disabled:opacity-40 disabled:cursor-not-allowed;
+    background: linear-gradient(135deg, #8B1538 0%, #C0274A 50%, #C4934A 100%);
+    box-shadow: 0 0 24px rgba(139,21,56,0.45), 0 4px 15px rgba(0,0,0,0.5);
+  }
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: 0 0 40px rgba(192,39,74,0.6), 0 0 15px rgba(196,147,74,0.35);
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2
+           rounded-full px-6 py-3 text-sm font-semibold text-[#0C0008]
+           transition-all duration-300 active:scale-95;
+    background: linear-gradient(135deg, #C4934A 0%, #E8B060 100%);
+    box-shadow: 0 0 20px rgba(196,147,74,0.40), 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .btn-gold:hover {
+    box-shadow: 0 0 40px rgba(232,176,96,0.60);
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           rounded-full px-6 py-3 text-sm font-medium
+           transition-all duration-300 active:scale-95;
+    background: var(--glass-md);
+    border: 1px solid var(--border-gold);
+    color: var(--gold);
+    backdrop-filter: blur(12px);
+  }
+  .btn-ghost:hover {
+    background: var(--glass-heavy);
+    box-shadow: 0 0 15px rgba(196,147,74,0.2);
+  }
+
+  /* ── Cards & Glass ───────────────────────────────────────── */
+  .card-glass {
+    @apply rounded-2xl relative overflow-hidden;
+    background: var(--glass);
+    border: 1px solid var(--border-dim);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .card-glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .card {
+    @apply card-glass rounded-3xl shadow-2xl;
+  }
+
+  /* ── Character cards ─────────────────────────────────────── */
+  .character-card {
+    @apply relative overflow-hidden rounded-2xl cursor-pointer;
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1),
+                box-shadow 0.35s ease;
+  }
+  .character-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 0 35px rgba(196,147,74,0.30), 0 20px 40px rgba(0,0,0,0.7);
+  }
+
+  /* ── Inputs ──────────────────────────────────────────────── */
+  .input-desi {
+    @apply w-full rounded-xl px-4 py-3 text-sm text-[#F8EED8]
+           focus:outline-none transition-all duration-200
+           placeholder:text-white/25;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+  }
+  .input-desi:focus {
+    border-color: rgba(196,147,74,0.45);
+    background: rgba(255,255,255,0.09);
+    box-shadow: 0 0 0 3px rgba(196,147,74,0.12);
+  }
+
+  /* ── Chat bubbles ────────────────────────────────────────── */
+  .bubble-ai {
+    @apply max-w-[78%] rounded-3xl rounded-tl-md px-4 py-3 text-sm leading-relaxed;
+    background: linear-gradient(135deg, rgba(139,21,56,0.55), rgba(192,39,74,0.35));
+    border: 1px solid rgba(139,21,56,0.30);
+    color: #F8EED8;
+  }
+
+  .bubble-user {
+    @apply max-w-[78%] rounded-3xl rounded-tr-md px-4 py-3 text-sm leading-relaxed;
+    background: linear-gradient(135deg, rgba(196,147,74,0.55), rgba(232,176,96,0.40));
+    border: 1px solid rgba(196,147,74,0.30);
+    color: #fff;
+  }
+
+  /* ── Sidebar ─────────────────────────────────────────────── */
+  .sidebar {
+    @apply fixed left-0 top-0 h-full w-64 z-40 flex flex-col;
+    background: linear-gradient(180deg, #120009 0%, #0C0008 100%);
+    border-right: 1px solid var(--border-dim);
+  }
+
+  /* ── Badge ───────────────────────────────────────────────── */
+  .badge-desi {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+    background: rgba(196,147,74,0.15);
+    border: 1px solid rgba(196,147,74,0.30);
+    color: var(--gold-bright);
+  }
+
+  /* ── Skeleton loader ─────────────────────────────────────── */
+  .skeleton {
+    @apply rounded-xl animate-pulse;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.08));
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+@layer utilities {
+
+  /* ── Text gradients ──────────────────────────────────────── */
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #C4934A 0%, #E8B060 50%, #F5D99A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-maroon {
+    background: linear-gradient(135deg, #C0274A 0%, #E05070 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-cinematic {
+    background: linear-gradient(135deg, #E8B060 0%, #F5D99A 40%, #C0274A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Glow effects ────────────────────────────────────────── */
+  .glow-gold    { box-shadow: var(--glow-gold); }
+  .glow-gold-lg { box-shadow: var(--glow-gold-lg); }
+  .glow-maroon  { box-shadow: var(--glow-maroon); }
+
+  /* ── Glass surface ───────────────────────────────────────── */
+  .glass {
+    background: var(--glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-dim);
+  }
+  .glass-gold {
+    background: rgba(196,147,74,0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-gold);
+  }
+
+  /* ── Ambient orb (reusable) ──────────────────────────────── */
+  .orb-maroon {
+    position: absolute;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(139,21,56,0.35) 0%, transparent 70%);
+    filter: blur(40px);
+    pointer-events: none;
+  }
+  .orb-gold {
+    position: absolute;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(196,147,74,0.25) 0%, transparent 70%);
+    filter: blur(50px);
+    pointer-events: none;
+  }
+
+  /* ── Gold border accent ──────────────────────────────────── */
+  .gold-border { border: 1px solid var(--border-gold); }
+  .gold-ring   { outline: 1px solid var(--border-gold); outline-offset: 2px; }
+
+  /* ── Scrollbar hide ──────────────────────────────────────── */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ── Line clamp ──────────────────────────────────────────── */
+  .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATIONS  (keyframes)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Slow pulse glow */
+@keyframes halo-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(196,147,74,0.25), 0 0 60px rgba(139,21,56,0.15); }
+  50%       { box-shadow: 0 0 40px rgba(196,147,74,0.50), 0 0 90px rgba(139,21,56,0.30); }
+}
+.animate-halo { animation: halo-pulse 3s ease-in-out infinite; }
+
+/* Float */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+.animate-float { animation: float 4s ease-in-out infinite; }
+
+/* Shimmer */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* Subtle rotate for decorative elements */
+@keyframes slow-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-slow-spin { animation: slow-spin 20s linear infinite; }
+
+/* Waveform bar bounce */
+@keyframes wave-bounce {
+  0%, 100% { transform: scaleY(0.4); }
+  50%       { transform: scaleY(1.0); }
+}
+
+/* Particle rise */
+@keyframes particle-rise {
+  0%   { transform: translateY(0) scale(1); opacity: 0.6; }
+  100% { transform: translateY(-120px) scale(0.3); opacity: 0; }
+}
+.animate-particle { animation: particle-rise var(--duration, 4s) ease-out infinite; }
+
+/* ═══════════════════════════════════════════════════════════════
+   SAFE AREA (mobile)
+   ═══════════════════════════════════════════════════════════════ */
+.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
+.safe-area-top    { padding-top: env(safe-area-inset-top, 0); }
+
+/* Henna watermark (hero only) */
+.henna-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/henna-motif.svg');
+  background-size: 600px;
+  background-repeat: repeat;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}

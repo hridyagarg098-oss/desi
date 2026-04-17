@@ -1,0 +1,23 @@
+
+> desidarling@1.0.0 build
+> next build
+
+  ??? Next.js 15.0.0
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ??? Compiled successfully
+   Linting and checking validity of types ...
+ ??? ESLint: Invalid Options: - Unknown options: useEslintrc, extensions - 'extensions' has been removed.
+Failed to compile.
+System.Management.Automation.RemoteException
+./app/(app)/profile/page.tsx:40:26
+Type error: Property 'full_name' does not exist on type 'never'.
+System.Management.Automation.RemoteException
+[0m [90m 38 |[39m       [36mif[39m (data) {[0m
+[0m [90m 39 |[39m         setProfile(data)[0m
+[0m[31m[1m>[22m[39m[90m 40 |[39m         setFullName(data[33m.[39mfull_name [33m?[39m[33m?[39m [32m''[39m)[0m
+[0m [90m    |[39m                          [31m[1m^[22m[39m[0m
+[0m [90m 41 |[39m         setUsername(data[33m.[39musername [33m?[39m[33m?[39m [32m''[39m)[0m
+[0m [90m 42 |[39m       }[0m
+[0m [90m 43 |[39m       setLoading([36mfalse[39m)[0m

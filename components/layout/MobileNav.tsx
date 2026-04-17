@@ -14,6 +14,9 @@ const BASE_TABS = [
   { href: '/my-darlings', icon: Heart,     label: 'Darlings' },
 ]
 
+// Pages that have their own full-screen UI — hide the tab bar so it doesn't cover their input
+const HIDDEN_ON = ['/chat/', '/call/']
+
 export function MobileNav() {
   const pathname = usePathname()
   const [loggedIn, setLoggedIn] = useState(false)
@@ -27,6 +30,10 @@ export function MobileNav() {
     return () => subscription.unsubscribe()
   }, [])
 
+  // Hide on full-screen pages
+  const shouldHide = HIDDEN_ON.some(prefix => pathname.startsWith(prefix))
+  if (shouldHide) return null
+
   const authTab = loggedIn
     ? { href: '/profile', icon: User2,  label: 'Profile' }
     : { href: '/login',   icon: LogIn,  label: 'Sign In' }
@@ -35,12 +42,14 @@ export function MobileNav() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 lg:hidden safe-area-bottom"
+      className="fixed bottom-0 inset-x-0 z-40 lg:hidden"
       style={{
         background: 'linear-gradient(180deg, rgba(12,0,8,0.85) 0%, rgba(8,4,7,0.97) 100%)',
         borderTop: '1px solid rgba(255,255,255,0.06)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
+        // Safe area for iPhone home indicator — no CSS class needed
+        paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
       <div className="flex items-center justify-around py-2 px-1">
@@ -72,7 +81,7 @@ export function MobileNav() {
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                 >
                   <Icon
-                    size={21}
+                    size={22}
                     strokeWidth={isActive ? 2.2 : 1.7}
                     style={{
                       color: isActive ? '#E8B060' : 'rgba(255,255,255,0.35)',
@@ -85,7 +94,7 @@ export function MobileNav() {
 
               {/* Label */}
               <span
-                className="text-[10px] font-medium relative z-10 transition-all"
+                className={cn('text-[10px] font-medium relative z-10 transition-all')}
                 style={{
                   color: isActive ? '#C4934A' : 'rgba(255,255,255,0.30)',
                   fontFamily: '"DM Sans", sans-serif',

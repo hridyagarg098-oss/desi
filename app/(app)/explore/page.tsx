@@ -61,7 +61,7 @@ export default function ExplorePage() {
 
   return (
     <div
-      className="min-h-screen px-4 sm:px-6 py-8 pb-28 lg:pb-8"
+      className="min-h-screen px-3 sm:px-6 py-5 sm:py-8 pb-24 lg:pb-8"
       style={{ background: 'linear-gradient(160deg, #0C0008 0%, #1A000F 50%, #0C0008 100%)' }}
     >
       {/* Ambient glow */}
@@ -74,13 +74,13 @@ export default function ExplorePage() {
 
       <div className="relative max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-6 sm:mb-10">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
             <span style={{ background: 'linear-gradient(135deg, #FFF1E6, #F59E0B)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Explore Darlings
             </span>
           </h1>
-          <p className="text-white/40 text-sm">Find your perfect desi companion — or create your own ✨</p>
+          <p className="text-white/40 text-xs sm:text-sm">Find your perfect desi companion — or create your own ✨</p>
         </motion.div>
 
         {/* Filters */}
@@ -145,7 +145,7 @@ export default function ExplorePage() {
         </motion.div>
 
         {/* Character grid */}
-        <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4">
+        <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 sm:gap-4 space-y-3 sm:space-y-4">
           {filtered.map((char, i) => (
             <motion.div
               key={char.id}
@@ -194,7 +194,7 @@ function CharacterCard({
       {/* Avatar */}
       <div
         className="w-full relative overflow-hidden"
-        style={{ height: '200px', background: c.avatarGradient || 'linear-gradient(135deg, #8B1538, #C4934A)' }}
+        style={{ height: 'clamp(130px, 30vw, 200px)', background: c.avatarGradient || 'linear-gradient(135deg, #8B1538, #C4934A)' }}
       >
         <img
           src={c.avatar_url}
@@ -261,36 +261,36 @@ function CharacterCard({
       </div>
 
       {/* Info */}
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-1">
-          <h3 className="font-bold text-white text-base" style={{ fontFamily: "'Playfair Display', serif" }}>{c.name}</h3>
-          <span className="text-xs text-emerald-400 font-medium">{c.is_premium ? 'Premium' : 'Free'}</span>
+      <div className="p-2.5 sm:p-4">
+        <div className="flex items-start justify-between mb-0.5">
+          <h3 className="font-bold text-white text-sm sm:text-base" style={{ fontFamily: "'Playfair Display', serif" }}>{c.name}</h3>
+          <span className="text-[10px] sm:text-xs text-emerald-400 font-medium">{c.is_premium ? '⭐' : 'Free'}</span>
         </div>
-        <p className="text-xs text-white/40 mb-3 line-clamp-2">{c.tagline}</p>
+        <p className="text-[10px] sm:text-xs text-white/40 mb-2 line-clamp-2">{c.tagline}</p>
 
         {/* Heat level */}
-        <div className="flex items-center gap-1 mb-4">
-          <Flame size={10} className="text-[#F59E0B]" />
+        <div className="flex items-center gap-0.5 sm:gap-1 mb-2 sm:mb-4">
+          <Flame size={9} className="text-[#F59E0B]" />
           {[...Array(5)].map((_, i) => (
             <div key={i} className="h-1 flex-1 rounded-full transition-colors"
               style={{ background: i < c.heat_level ? 'linear-gradient(90deg, #9F1239, #D97706)' : 'rgba(255,255,255,0.08)' }} />
           ))}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           <Link
             href={`/chat/${c.id}`}
-            className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-95"
+            className="flex items-center justify-center gap-1 flex-1 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold text-white transition-all active:scale-95"
             style={{ background: 'linear-gradient(135deg, #9F1239, #C4934A)', boxShadow: '0 0 15px rgba(159,18,57,0.3)' }}
           >
-            <MessageCircle size={12} />Chat
+            <MessageCircle size={11} />Chat
           </Link>
           <Link
             href={`/call/${c.id}`}
-            className="flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:opacity-90 active:scale-95"
+            className="flex items-center justify-center gap-1 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95"
             style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B' }}
           >
-            <Mic size={12} />
+            <Mic size={11} />
           </Link>
         </div>
       </div>

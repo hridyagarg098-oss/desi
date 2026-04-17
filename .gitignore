@@ -62,3 +62,4 @@ tsc*.txt
 tsc-*.txt
 tsc_*.txt
 
+.vercel

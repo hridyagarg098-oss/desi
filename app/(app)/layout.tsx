@@ -11,18 +11,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // This layout wraps both public (explore, chat) and auth-gated routes.
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'linear-gradient(160deg, #0C0008 0%, #1A000F 50%, #0C0008 100%)' }}>
+    <div className="flex" style={{ height: '100dvh', background: 'linear-gradient(160deg, #0C0008 0%, #1A000F 50%, #0C0008 100%)' }}>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex">
+      <aside className="hidden lg:flex flex-shrink-0">
         <Sidebar user={user as User | null} />
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
+      {/* Main Content — overflow-y-auto allows pages to scroll; no overflow-hidden so keyboard doesn't clip */}
+      <main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
         {children}
       </main>
 
-      {/* Mobile Bottom Nav */}
+      {/* Mobile Bottom Nav — hidden on /chat and /call routes */}
       <MobileNav />
     </div>
   )

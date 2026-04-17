@@ -7,9 +7,6 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.replicate.com' },
     ],
   },
-  experimental: {
-    serverActions: { allowedOrigins: ['localhost:3000'] },
-  },
 }
 
 export default nextConfig

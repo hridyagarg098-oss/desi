@@ -399,7 +399,7 @@ export default function ChatInterface({ characterId, characterName, character, c
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-screen relative" style={{ background: 'linear-gradient(180deg, #0C0008 0%, #080407 100%)' }}>
+    <div className="flex flex-col relative" style={{ height: '100dvh', background: 'linear-gradient(180deg, #0C0008 0%, #080407 100%)' }}>
 
       {/* Ambient glow orbs */}
       <div className="absolute top-0 left-0 w-64 h-64 rounded-full pointer-events-none"
@@ -680,11 +680,12 @@ export default function ChatInterface({ characterId, characterName, character, c
 
       {/* ── Input bar ─────────────────────────────────────────────────────── */}
       <div
-        className="flex-shrink-0 px-4 py-3 relative z-10 safe-area-bottom"
+        className="flex-shrink-0 px-4 pt-3 relative z-10"
         style={{
           background: 'linear-gradient(0deg, rgba(12,0,8,0.97) 0%, rgba(12,0,8,0.85) 100%)',
           backdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(196,147,74,0.12)',
+          paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
         }}
       >
         {/* Quick emojis */}
@@ -713,37 +714,47 @@ export default function ChatInterface({ characterId, characterName, character, c
           {/* Emoji toggle */}
           <button
             onClick={() => setShowEmoji(!showEmoji)}
-            className="p-2 rounded-xl flex-shrink-0 transition-all"
-            style={{ color: showEmoji ? '#C4934A' : 'rgba(248,238,216,0.40)' }}
+            className="flex-shrink-0 rounded-xl transition-all flex items-center justify-center"
+            style={{ color: showEmoji ? '#C4934A' : 'rgba(248,238,216,0.40)', minWidth: 44, minHeight: 44 }}
           >
-            <Smile size={18} />
+            <Smile size={20} />
           </button>
 
           {/* Camera */}
           <button
             onClick={() => setShowImagePrompt(!showImagePrompt)}
-            className={cn('p-2 rounded-xl transition-all flex-shrink-0', isGeneratingImage && 'animate-pulse cursor-not-allowed')}
-            style={{ color: isGeneratingImage ? 'rgba(196,147,74,0.50)' : 'rgba(248,238,216,0.50)' }}
+            className={cn('rounded-xl transition-all flex-shrink-0 flex items-center justify-center', isGeneratingImage && 'animate-pulse cursor-not-allowed')}
+            style={{ color: isGeneratingImage ? 'rgba(196,147,74,0.50)' : 'rgba(248,238,216,0.50)', minWidth: 44, minHeight: 44 }}
             disabled={isGeneratingImage}
             title="Request a photo from her"
           >
-            <Camera size={18} />
+            <Camera size={20} />
           </button>
 
-          {/* Text input */}
+          {/* Text input — 16px font prevents iOS auto-zoom */}
           <input
             ref={inputRef}
             type="text"
+            inputMode="text"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="sentences"
+            spellCheck={false}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage(input)}
             placeholder={`Kuch kaho ${characterName} ko... 💕`}
-            className="flex-1 rounded-2xl px-4 py-2.5 text-sm transition-all"
+            className="flex-1 rounded-2xl px-4 transition-all"
             style={{
               background: 'rgba(255,255,255,0.07)',
               border: '1px solid rgba(255,255,255,0.10)',
               color: '#F8EED8',
               outline: 'none',
+              fontSize: 16,           /* CRITICAL: prevents iOS Safari auto-zoom on focus */
+              lineHeight: '1.4',
+              minHeight: 44,          /* iOS minimum touch target */
+              paddingTop: 10,
+              paddingBottom: 10,
             }}
             onFocus={e => { e.currentTarget.style.borderColor = 'rgba(196,147,74,0.45)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,147,74,0.10)' }}
             onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; e.currentTarget.style.boxShadow = 'none' }}
@@ -751,24 +762,29 @@ export default function ChatInterface({ characterId, characterName, character, c
           />
 
           {/* Mic */}
-          <button className="p-2 rounded-xl flex-shrink-0 transition-all" style={{ color: 'rgba(248,238,216,0.40)' }}>
-            <Mic size={18} />
+          <button
+            className="rounded-xl flex-shrink-0 transition-all flex items-center justify-center"
+            style={{ color: 'rgba(248,238,216,0.40)', minWidth: 44, minHeight: 44 }}
+          >
+            <Mic size={20} />
           </button>
 
           {/* Send */}
           <button
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || loading}
-            className="p-2.5 rounded-xl flex-shrink-0 transition-all disabled:opacity-30"
+            className="rounded-xl flex-shrink-0 transition-all disabled:opacity-30 flex items-center justify-center"
             style={{
               background: input.trim() && !loading
                 ? 'linear-gradient(135deg, #8B1538, #C0274A)'
                 : 'rgba(255,255,255,0.06)',
               color: input.trim() && !loading ? '#fff' : 'rgba(248,238,216,0.25)',
               boxShadow: input.trim() && !loading ? '0 0 16px rgba(192,39,74,0.45)' : 'none',
+              minWidth: 44,
+              minHeight: 44,
             }}
           >
-            <Send size={16} />
+            <Send size={18} />
           </button>
         </div>
       </div>

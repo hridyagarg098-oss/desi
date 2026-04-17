@@ -37,6 +37,8 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,      // prevents iOS zoom on input tap
+  viewportFit: 'cover',     // unlocks env(safe-area-inset-bottom) on iPhone notch/home bar
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

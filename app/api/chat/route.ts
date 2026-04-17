@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { PREMADE_CHARACTERS } from '@/types'
 import { buildSystemPrompt } from '@/lib/ai/prompts'
+import { getCharacterConfig } from '@/lib/ai/chat-config'
+import { detectUserMood } from '@/lib/ai/mood-detector'
 import { checkUsageLimit, getLimitMessage, getPlanLimits, type UsageProfile } from '@/lib/payment/limits'
 
 // ── Memory fact extractor (zero-latency, rule-based) ────────────────────────
@@ -109,11 +111,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ── Build system prompt with memory ───────────────────────────────────────
-    let systemPrompt = buildSystemPrompt(character)
+    // ── Detect user mood & conversation context ───────────────────────────────
+    const lastUserMsg2 = [...messages].reverse().find((m: { role: string }) => m.role === 'user')
+    const moodCtx = detectUserMood(
+      lastUserMsg2?.content ?? '',
+      messages.length
+    )
+
+    // ── Build system prompt with mood awareness + memory ──────────────────────
+    let systemPrompt = buildSystemPrompt(character, moodCtx)
     if (memoryFacts.length > 0) {
       systemPrompt += `\n\nUSER MEMORY (things you remember about this user — reference naturally):\n${memoryFacts.map((f, i) => `${i + 1}. ${f}`).join('\n')}`
     }
+
+    // ── Get character-specific AI params ─────────────────────────────────────
+    const chatConfig = getCharacterConfig(character.id)
 
     // ── Persist chat + user message ────────────────────────────────────────────
     let currentChatId = chatId
@@ -165,8 +177,8 @@ export async function POST(request: NextRequest) {
                 content: m.content,
               })),
             ],
-            max_tokens: 300,
-            temperature: 0.9,
+            max_tokens: chatConfig.maxTokens,
+            temperature: chatConfig.temperature,
           }),
           signal: ctrl.signal,
         })
@@ -199,7 +211,7 @@ export async function POST(request: NextRequest) {
             body: JSON.stringify({
               system_instruction: { parts: [{ text: systemPrompt }] },
               contents: geminiMessages,
-              generationConfig: { maxOutputTokens: 300, temperature: 0.92 },
+              generationConfig: { maxOutputTokens: chatConfig.maxTokens, temperature: chatConfig.temperature },
             }),
             signal: ctrl.signal,
           }

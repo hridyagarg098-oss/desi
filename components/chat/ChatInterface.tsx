@@ -2,12 +2,14 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Phone, Sparkles, Smile, Mic, ArrowLeft, Camera, ImageIcon, Brain, X, Heart } from 'lucide-react'
+import { Send, Phone, Sparkles, Smile, Mic, ArrowLeft, Camera, ImageIcon, X, Heart } from 'lucide-react'
 import Link from 'next/link'
 import { useAppStore } from '@/store/useAppStore'
 import type { Message, Character } from '@/types'
 import { cn } from '@/lib/utils'
 import { PaymentModal } from '@/components/payment/PaymentModal'
+import BondMeter from '@/components/chat/BondMeter'
+import type { BondData } from '@/components/chat/BondMeter'
 
 // Extended message type used for seeded image placeholders
 interface ExtendedMessage extends Message { needsImage?: boolean }
@@ -21,18 +23,14 @@ interface ChatInterfaceProps {
 
 const EMOJI_QUICK = ['❤️', '🔥', '😏', '😍', '🌹', '☕', '💋', '✨', '🥀', '💫']
 
-// Image request detection — if user message matches these, generate an image
+// Image request detection
 const IMAGE_TRIGGERS = [
   /\b(generate|create|make|send|show)\s+(me\s+)?(a\s+|an\s+)?photo/i,
   /\b(generate|create|make|send|show)\s+(me\s+)?(a\s+|an\s+)?image/i,
   /\b(generate|create|make|send|show)\s+(me\s+)?(a\s+|an\s+)?pic(ture)?/i,
-  /\bphoto\s+(bhejo|dikhao|dedo|do)/i,
-  /\btasveeer?\s+(bhejo|dikhao|dedo|do)/i,
-  /kaise\s+dikh\s+rahi/i,
-  /kaisi\s+lag\s+rahi/i,
-  /aaj\s+kya\s+pehna/i,
-  /outfit\s+(dikhao|bhejo)/i,
-  /selfie\s+(bhejo|do|lo)/i,
+  /\bsend\s+(me\s+)?a\s+selfie/i,
+  /\bshow\s+(me\s+)?yourself/i,
+  /\bwhat\s+do\s+you\s+look\s+like/i,
 ]
 
 function isImageRequest(message: string): boolean {
@@ -105,13 +103,13 @@ const SEEDED_CHATS: Record<string, Array<{ role: 'user' | 'assistant'; content: 
 }
 
 export default function ChatInterface({ characterId, characterName, character, chatId }: ChatInterfaceProps) {
-  const { messages, addMessage, isGeneratingImage, setIsGeneratingImage, memory, chatSessions, setChatSession, addMemory } = useAppStore()
+  const { messages, addMessage, isGeneratingImage, setIsGeneratingImage, memory, chatSessions, setChatSession, addMemory, bondData, setBond } = useAppStore()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [showEmoji, setShowEmoji] = useState(false)
   const [imagingScenario, setImagingScenario] = useState('')
   const [showImagePrompt, setShowImagePrompt] = useState(false)
-  const [showMemory, setShowMemory] = useState(false)
+  const [bond, setBondLocal] = useState<BondData | null>(bondData[characterId] ?? null)
   const [paymentModal, setPaymentModal] = useState<{ open: boolean; reason?: string }>({ open: false })
   const [tokensLeft, setTokensLeft] = useState<number | null>(null)
   const [tokensTotal, setTokensTotal] = useState<number>(35)
@@ -356,11 +354,17 @@ export default function ChatInterface({ characterId, characterName, character, c
         }
       }
 
-      // Save extracted memory facts so the AI remembers things about the user
+      // Save extracted memory facts
       if (Array.isArray(data.extractedFacts) && data.extractedFacts.length > 0) {
         for (const fact of data.extractedFacts as string[]) {
           addMemory(characterId, fact)
         }
+      }
+
+      // Update bond data in store + local state for instant UI
+      if (data.bond) {
+        setBond(characterId, data.bond)
+        setBondLocal(data.bond)
       }
 
       const store = useAppStore.getState()
@@ -452,15 +456,6 @@ export default function ChatInterface({ characterId, characterName, character, c
         </div>
 
         <div className="flex items-center gap-1">
-          {/* Memory toggle */}
-          <button
-            onClick={() => setShowMemory(!showMemory)}
-            className="p-2 rounded-xl transition-all"
-            style={{ color: charMemory.length > 0 ? '#C4934A' : 'rgba(248,238,216,0.40)' }}
-            title="Conversation memory"
-          >
-            <Brain size={16} />
-          </button>
           <Link href={`/call/${character.id}`} className="p-2 rounded-xl transition-all" style={{ color: 'rgba(248,238,216,0.60)' }}>
             <Phone size={16} />
           </Link>
@@ -474,41 +469,16 @@ export default function ChatInterface({ characterId, characterName, character, c
         </div>
       </div>
 
-      {/* ── Memory panel (slide-down) ──────────────────────────────────────── */}
-      <AnimatePresence>
-        {showMemory && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden flex-shrink-0 relative z-10"
-            style={{ borderBottom: '1px solid rgba(196,147,74,0.15)' }}
-          >
-            <div className="px-4 py-3" style={{ background: 'rgba(196,147,74,0.05)' }}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold flex items-center gap-1.5" style={{ color: '#C4934A' }}>
-                  <Brain size={12} /> Memory — what {characterName} remembers about you
-                </span>
-                <button onClick={() => setShowMemory(false)}><X size={14} style={{ color: 'rgba(248,238,216,0.4)' }} /></button>
-              </div>
-              {charMemory.length === 0 ? (
-                <p className="text-xs" style={{ color: 'rgba(248,238,216,0.40)' }}>
-                  Keep chatting — {characterName} will start remembering things about you ✨
-                </p>
-              ) : (
-                <div className="flex flex-wrap gap-1.5">
-                  {charMemory.map((item, i) => (
-                    <span key={i} className="text-xs px-2.5 py-1 rounded-full"
-                      style={{ background: 'rgba(196,147,74,0.12)', border: '1px solid rgba(196,147,74,0.25)', color: '#F5D99A' }}>
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* ── BondMeter (below header) ─────────────────────────────────────── */}
+      <div className="flex-shrink-0 relative z-10">
+        <BondMeter
+          bond={bond}
+          memories={charMemory}
+          characterName={characterName}
+        />
+      </div>
+
+
 
       {/* ── Character info strip ───────────────────────────────────────────── */}
       <div className="flex items-center gap-2 px-4 py-2 flex-shrink-0 relative z-10"

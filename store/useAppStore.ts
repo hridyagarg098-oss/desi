@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Character, Message, UserProfile, Subscription } from '@/types'
+import type { BondData } from '@/components/chat/BondMeter'
 
 interface AppState {
   // Auth
@@ -59,6 +60,11 @@ interface AppState {
   // Lets us fetch/save to the correct DB row across page refreshes.
   chatSessions: Record<string, string>
   setChatSession: (characterId: string, chatId: string) => void
+
+  // ── Bond data (live from Supabase, not persisted to localStorage) ──────────
+  // Updated in real time after each chat message via the API response.
+  bondData: Record<string, BondData>
+  setBond: (characterId: string, data: BondData) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -152,9 +158,16 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           chatSessions: { ...state.chatSessions, [characterId]: chatId },
         })),
+
+      // Bond data — not persisted (fetched fresh from Supabase via chat API)
+      bondData: {},
+      setBond: (characterId, data) =>
+        set((state) => ({
+          bondData: { ...state.bondData, [characterId]: data },
+        })),
     }),
     {
-      name: 'desidarling-store',
+      name: 'velvet-store',
       partialize: (s) => ({
         ageVerified: s.ageVerified,
         theme: s.theme,

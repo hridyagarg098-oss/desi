@@ -6,11 +6,12 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye, EyeOff, Mail, Lock, Loader2, Heart, Sparkles, ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { getDeviceId } from '@/lib/device/getDeviceId'
 
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const nextUrl = searchParams.get('next') || '/'
+  const nextUrl = searchParams.get('next') || '/explore'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -31,12 +32,37 @@ function LoginForm() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      setError(error.message)
+
+    // Step 1 — Authenticate with Supabase
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    if (authError) {
+      setError(authError.message)
       setLoading(false)
       return
     }
+
+    // Step 2 — Device limit check (runs after session is set)
+    try {
+      const deviceId = getDeviceId()
+      const res = await fetch('/api/auth/device-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId }),
+      })
+      const data = await res.json()
+
+      if (!data.allowed) {
+        // Device is at capacity — sign back out and show the error
+        await supabase.auth.signOut()
+        setError(data.error || 'This device has reached its account limit.')
+        setLoading(false)
+        return
+      }
+    } catch {
+      // Device check failed silently — still allow login (fail open)
+      console.warn('[Login] Device check request failed — continuing')
+    }
+
     router.push(nextUrl)
     router.refresh()
   }
@@ -81,7 +107,7 @@ function LoginForm() {
         style={{ background: 'linear-gradient(90deg, transparent, rgba(245,158,11,0.5), transparent)' }} />
 
       <h1 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
-        Wapas aa gayi! 💛
+        Welcome back 💛
       </h1>
       <p className="text-white/40 text-sm mb-7">Sign in to continue your conversations</p>
 
@@ -160,7 +186,6 @@ function LoginForm() {
           className="w-full py-3.5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 disabled:opacity-50 transition-all relative overflow-hidden"
           style={{ background: 'linear-gradient(135deg, #9F1239, #C4934A)', boxShadow: '0 0 30px rgba(159,18,57,0.45)' }}
         >
-          {/* shimmer sweep */}
           <motion.div
             className="absolute inset-0"
             animate={{ x: loading ? 0 : ['-100%', '200%'] }}
@@ -178,7 +203,7 @@ function LoginForm() {
       {/* Divider */}
       <div className="my-6 flex items-center gap-3">
         <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-        <span className="text-xs text-white/30">ya fir</span>
+        <span className="text-xs text-white/30">or</span>
         <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
       </div>
 
@@ -200,7 +225,7 @@ function LoginForm() {
 
       {/* Sign up link */}
       <p className="mt-6 text-center text-sm text-white/35">
-        Pehli baar aa rahi ho?{' '}
+        New here?{' '}
         <Link href="/signup" className="text-[#9F1239] font-semibold hover:text-[#D97706] transition-colors">
           Create account
         </Link>
@@ -245,16 +270,13 @@ export default function LoginPage() {
             </div>
             <span className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
               <span style={{ background: 'linear-gradient(135deg, #FFF1E6, #F9A8D4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                DesiDarling
-              </span>
-              <span style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                .ai
+                Velvet
               </span>
             </span>
           </Link>
           <p className="mt-2 text-white/35 text-sm flex items-center justify-center gap-1.5">
             <Sparkles size={12} className="text-[#F59E0B]/60" />
-            Apna dil, apni duniya
+            Your world, your companion
           </p>
         </div>
 

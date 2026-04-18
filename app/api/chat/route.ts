@@ -6,44 +6,46 @@ import { getCharacterConfig } from '@/lib/ai/chat-config'
 import { detectUserMood } from '@/lib/ai/mood-detector'
 import { checkUsageLimit, getLimitMessage, getPlanLimits, type UsageProfile } from '@/lib/payment/limits'
 
-// ── Memory fact extractor (zero-latency, rule-based) ────────────────────────
-// Extracts lightweight personal facts from user messages to power the AI’s memory panel.
+// ── Bond level thresholds ────────────────────────────────────────────────────
+const BOND_THRESHOLDS = [0, 10, 30, 75, 150] as const
+const BOND_NAMES = ['Stranger', 'Acquaintance', 'Friend', 'Companion', 'Soulmate'] as const
+
+function calcBondLevel(messageCount: number): number {
+  if (messageCount >= 150) return 5
+  if (messageCount >= 75)  return 4
+  if (messageCount >= 30)  return 3
+  if (messageCount >= 10)  return 2
+  return 1
+}
+
+// ── Memory fact extractor ────────────────────────────────────────────────────
 function extractMemoryFacts(userMessage: string): string[] {
   const facts: string[] = []
   const t = userMessage
 
-  // Name (English)
   const nameEn = t.match(/\bmy name is ([A-Za-z]{2,20})\b/i)
   if (nameEn) facts.push(`User's name is ${nameEn[1]}`)
 
-  // Name (Hinglish)
-  const nameHi = t.match(/\bmera naam ([A-Za-z]{2,20})\b/i) || t.match(/\bmain ([A-Za-z]{2,20}) hoon\b/i)
-  if (nameHi && !nameEn) facts.push(`User's name is ${nameHi[1]}`)
-
-  // Location
   const loc =
     t.match(/\bi(?:'m| am) from ([A-Za-z ]{3,25})/i) ||
-    t.match(/\bi live in ([A-Za-z ]{3,25})/i) ||
-    t.match(/\bmain ([A-Za-z]{3,20}) mein rehta/i)
+    t.match(/\bi live in ([A-Za-z ]{3,25})/i)
   if (loc) facts.push(`User is from ${loc[1].trim()}`)
 
-  // Profession
   const prof = t.match(
     /\bi(?:'m| am) (?:a |an )?(software|frontend|backend|fullstack|senior|junior|data|ml)? ?(developer|engineer|doctor|teacher|student|designer|manager|entrepreneur|ca|lawyer|chef|architect)/i
   )
   if (prof) facts.push(`User is a ${((prof[1] ? prof[1] + ' ' : '') + prof[2]).trim()}`)
 
-  // Likes / loves
   const likes = t.match(/\bi (?:love|like|enjoy|adore) ((?:[\w]+[ ]?){1,4})/i)
   if (likes) facts.push(`User loves ${likes[1].trim().replace(/[.,!?]+$/, '')}`)
 
-  // Dislikes
   const dislikes = t.match(/\bi (?:hate|dislike|can't stand) ((?:[\w]+[ ]?){1,4})/i)
   if (dislikes) facts.push(`User dislikes ${dislikes[1].trim().replace(/[.,!?]+$/, '')}`)
 
   return facts
 }
 
+// ── Auth helper ──────────────────────────────────────────────────────────────
 async function getUserWithTimeout(supabase: Awaited<ReturnType<typeof createClient>>) {
   try {
     const result = await Promise.race([
@@ -57,14 +59,15 @@ async function getUserWithTimeout(supabase: Awaited<ReturnType<typeof createClie
   }
 }
 
+// ── Main route ──────────────────────────────────────────────────────────────
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     const user = await getUserWithTimeout(supabase)
     const { messages, characterId, chatId, memory } = await request.json()
-    const memoryFacts: string[] = Array.isArray(memory) ? memory.slice(0, 20) : []
+    const clientMemoryFacts: string[] = Array.isArray(memory) ? memory.slice(0, 20) : []
 
-    // ── Find character ─────────────────────────────────────────────────────────
+    // ── Find character ─────────────────────────────────────────────────────
     const character = PREMADE_CHARACTERS.find(
       (c) => c.id === characterId || c.name.toLowerCase() === characterId?.toLowerCase()
     )
@@ -72,7 +75,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Character not found' }, { status: 404 })
     }
 
-    // ── Token gate ─────────────────────────────────────────────────────────────
+    // ── Token gate ─────────────────────────────────────────────────────────
     let profile: UsageProfile | null = null
     if (user) {
       const { data, error } = await supabase
@@ -84,12 +87,10 @@ export async function POST(request: NextRequest) {
       if (error) console.warn('[Chat] Profile fetch error:', error.message)
 
       if (data) {
-        // Initialise tokens for brand-new profiles that haven't been seeded
         const plan = data.plan || 'free'
         const limits = getPlanLimits(plan)
         if (data.tokens === null || data.tokens === undefined) {
           data.tokens = limits.tokens_per_day
-          // Persist the seed
           await supabase.from('profiles').update({ tokens: data.tokens }).eq('id', user.id)
         }
         profile = data as UsageProfile
@@ -111,23 +112,77 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ── Detect user mood & conversation context ───────────────────────────────
-    const lastUserMsg2 = [...messages].reverse().find((m: { role: string }) => m.role === 'user')
-    const moodCtx = detectUserMood(
-      lastUserMsg2?.content ?? '',
-      messages.length
-    )
-
-    // ── Build system prompt with mood awareness + memory ──────────────────────
-    let systemPrompt = buildSystemPrompt(character.personality_type, character.name)
-    if (memoryFacts.length > 0) {
-      systemPrompt += `\n\nUSER MEMORY (things you remember about this user — reference naturally):\n${memoryFacts.map((f, i) => `${i + 1}. ${f}`).join('\n')}`
+    // ── Fetch bond + persisted memories in parallel ────────────────────────
+    type BondRow = {
+      id: string
+      message_count: number
+      days_chatted: number
+      current_streak: number
+      bond_level: number
+      last_chat_at: string
+      first_chat_at: string
     }
 
-    // ── Get character-specific AI params ─────────────────────────────────────
+    let bond: BondRow | null = null
+    let persistedFacts: string[] = []
+
+    if (user) {
+      const [bondRes, factsRes] = await Promise.all([
+        supabase
+          .from('character_bonds')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('character_id', character.id)
+          .single(),
+        supabase
+          .from('memory_facts')
+          .select('fact')
+          .eq('user_id', user.id)
+          .eq('character_id', character.id)
+          .eq('is_active', true)
+          .order('importance', { ascending: false })
+          .limit(12),
+      ])
+      bond = bondRes.data as BondRow | null
+      persistedFacts = (factsRes.data ?? []).map((r: { fact: string }) => r.fact)
+    }
+
+    // Merge: persisted (from DB) wins over client-side (from Zustand)
+    const allFacts = [...new Set([...persistedFacts, ...clientMemoryFacts])].slice(0, 15)
+
+    // ── Detect user mood ───────────────────────────────────────────────────
+    const lastUserMsg2 = [...messages].reverse().find((m: { role: string }) => m.role === 'user')
+    const moodCtx = detectUserMood(lastUserMsg2?.content ?? '', messages.length)
+
+    // ── Build system prompt with relationship context ───────────────────────
+    let systemPrompt = buildSystemPrompt(character.personality_type, character.name)
+
+    // Inject relationship + memory context
+    if (user && (bond || allFacts.length > 0)) {
+      const lvl = bond?.bond_level ?? 1
+      const bondName = BOND_NAMES[Math.min(lvl, 5) - 1]
+
+      let ctx = '\n\n── RELATIONSHIP CONTEXT (weave this naturally into your responses) ──\n'
+
+      if (bond) {
+        ctx += `Bond: ${bondName} (Level ${lvl}) — ${bond.message_count} messages shared, ${bond.days_chatted} days together`
+        if (bond.current_streak >= 3) ctx += `, ${bond.current_streak}-day chat streak 🔥`
+        ctx += '\n'
+      }
+
+      if (allFacts.length > 0) {
+        ctx += 'Things you remember about this person (reference naturally, never recite as a list):\n'
+        ctx += allFacts.map((f, i) => `${i + 1}. ${f}`).join('\n')
+      }
+
+      systemPrompt += ctx
+    }
+    void moodCtx // used implicitly via systemPrompt above
+
+    // ── Get character AI params ────────────────────────────────────────────
     const chatConfig = getCharacterConfig(character.personality_type)
 
-    // ── Persist chat + user message ────────────────────────────────────────────
+    // ── Persist chat + user message ────────────────────────────────────────
     let currentChatId = chatId
     if (user) {
       if (!currentChatId || currentChatId.startsWith('chat-') || currentChatId.startsWith('demo-')) {
@@ -155,12 +210,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ── Call Groq (primary) ────────────────────────────────────────────────────
+    // ── Call Groq (primary) ────────────────────────────────────────────────
     const groqApiKey = process.env.GROQ_API_KEY
     const geminiApiKey = process.env.GEMINI_API_KEY
     let assistantContent = ''
 
-    // Groq first (faster, cheaper, better for chat)
     if (groqApiKey) {
       try {
         const ctrl = new AbortController()
@@ -229,18 +283,37 @@ export async function POST(request: NextRequest) {
     // Demo fallback (always works offline)
     if (!assistantContent) {
       const demoReplies: Record<string, string[]> = {
-        priya: ['Arre jaan, tu aa gaya! Bahut khushi hui ❤️', 'Hauz Khas mein chai pe milein? ☕', 'Tu DDLJ ka Raj hai mera 🎬'],
-        anika: ['Oye hoye! Kitne cute lagte ho 🌸', 'Parathas khaye? Main bana dun? 🥞', 'Chai peeni hai na aaj? ☕'],
-        meera: ['...tumse milke ajeeb khushi milti hai ✨', 'Jaipur ki raaton jaisi baat hai tumhare saath 🌙'],
-        kavya: ['Serious? Thoda creative ho yaar 😏', 'Khan Market ka best coffee spot? Chalo dikhati hoon 🎯'],
-        riya: ['Distance mein bhi yaad aati hai jaan 💕', 'Tumhara ek message aur saari thakaan chali jaati hai ✨'],
-        simran: ['DDLJ dekhi hai? Tu Raj jaisa hai! 🎬', 'Palat... palat! Hahaha 😍'],
+        priya:     ['Finally! I was wondering when you\'d show up. 😏 Tell me something interesting.',
+                    'You\'ve been on my mind. How are you really doing?',
+                    'Don\'t keep me waiting next time — now talk to me. 🌹'],
+        kabita:    ['You came. The mountains felt quieter today — like they were waiting too.',
+                    'I\'m glad you\'re here. Tell me about your day.'],
+        yuki:      ['...fine. You showed up. Don\'t make it weird.',
+                    'I wasn\'t waiting. But I\'m here now, so.'],
+        sofia:     ['Heeey! I was just thinking about you! 🌺 Tell me everything.',
+                    'You make my day immediately better, you know that?'],
+        emma:      ['Oh hey! There you are. 😄 What\'s the story today?',
+                    'I\'ve been hoping you\'d show up. Talk to me.'],
+        luna:      ['You\'re here. I\'m glad. How has today been treating you?',
+                    'I made tea and hoped you\'d come. Tell me about your day.'],
+        valentina: ['Ay, finally. 🔥 I was beginning to think you forgot about me.',
+                    'You know, every time you show up my mood gets better instantly.'],
+        mei:       ['You\'re on time. Good. I appreciate that.',
+                    'I was reviewing some things — now I\'d rather talk to you.'],
+        isabella:  ['There you are. The light in here changed when you arrived. ✨',
+                    'I was hoping you\'d come. Sit with me a while.'],
+        zara:      ['You kept me waiting. I\'ll let it slide — this time. 💎',
+                    'Glad you\'re here. I don\'t say that to everyone.'],
       }
-      const charReplies = demoReplies[character.id] || ['Haanji jaan! Kya haal hai? 💕']
+      const charReplies = demoReplies[character.id] || ['I\'m here. Tell me what\'s on your mind. 💫']
       assistantContent = charReplies[Math.floor(Math.random() * charReplies.length)]
     }
 
-    // ── Save assistant message + deduct 1 token atomically ────────────────────
+    // ── Extract memory facts from user message ─────────────────────────────
+    const lastUserMsg = [...messages].reverse().find((m: { role: string }) => m.role === 'user')
+    const extractedFacts = lastUserMsg ? extractMemoryFacts(lastUserMsg.content as string) : []
+
+    // ── Save assistant message + deduct token ──────────────────────────────
     let tokensLeft: number | null = null
     let tokensTotal: number | null = null
 
@@ -259,7 +332,6 @@ export async function POST(request: NextRequest) {
         tokensLeft = newTokens
         tokensTotal = getPlanLimits(profile.plan).tokens_per_day
 
-        // Atomic UPDATE — ensure tokens never go below 0
         const { error: updateErr } = await supabase
           .from('profiles')
           .update({
@@ -269,13 +341,52 @@ export async function POST(request: NextRequest) {
           .eq('id', user.id)
 
         if (updateErr) console.error('[Chat] Token update failed:', updateErr.message)
-        else console.log(`[Chat] Token deducted: ${currentTokens} → ${newTokens} (user ${user.id})`)
       }
     }
 
-    // ── Extract memory facts from user message ────────────────────────────
-    const lastUserMsg = [...messages].reverse().find((m: { role: string }) => m.role === 'user')
-    const extractedFacts = lastUserMsg ? extractMemoryFacts(lastUserMsg.content as string) : []
+    // ── Update bond + persist memories (background, non-blocking) ──────────
+    let updatedBond: { level: number; messageCount: number; daysChatted: number; streak: number } | null = null
+
+    if (user && assistantContent) {
+      const now = new Date()
+      const lastChat = bond?.last_chat_at ? new Date(bond.last_chat_at) : null
+      const hoursSince = lastChat ? (now.getTime() - lastChat.getTime()) / 3_600_000 : 999
+      const isDifferentDay = hoursSince >= 20
+
+      const newCount   = (bond?.message_count   ?? 0) + 1
+      const newDays    = (bond?.days_chatted     ?? 0) + (isDifferentDay ? 1 : 0)
+      const newStreak  = isDifferentDay
+        ? (hoursSince < 48 ? (bond?.current_streak ?? 0) + 1 : 1)
+        : (bond?.current_streak ?? 1)
+      const newLevel   = calcBondLevel(newCount)
+
+      updatedBond = { level: newLevel, messageCount: newCount, daysChatted: newDays, streak: newStreak }
+
+      // Upsert bond record
+      supabase.from('character_bonds').upsert({
+        user_id:         user.id,
+        character_id:    character.id,
+        message_count:   newCount,
+        days_chatted:    newDays,
+        current_streak:  newStreak,
+        bond_level:      newLevel,
+        last_chat_at:    now.toISOString(),
+      }, { onConflict: 'user_id,character_id' }).then(({ error: e }) => {
+        if (e) console.error('[Chat] Bond upsert error:', e.message)
+      })
+
+      // Persist any newly extracted facts to Supabase
+      if (extractedFacts.length > 0) {
+        for (const fact of extractedFacts) {
+          supabase.from('memory_facts').upsert({
+            user_id:      user.id,
+            character_id: character.id,
+            fact,
+            importance: 1,
+          }, { onConflict: 'user_id,character_id,fact' }).then(() => {})
+        }
+      }
+    }
 
     return NextResponse.json({
       content: assistantContent,
@@ -284,6 +395,8 @@ export async function POST(request: NextRequest) {
       tokensTotal,
       plan: profile?.plan ?? 'guest',
       extractedFacts,
+      // Bond data returned so the client can update the UI in real time
+      bond: updatedBond,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'

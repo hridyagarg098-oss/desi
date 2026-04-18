@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Phone, Sparkles, Smile, Mic, ArrowLeft, Camera, ImageIcon, X, Heart } from 'lucide-react'
+import { Send, Phone, Smile, Mic, ArrowLeft, Camera, ImageIcon, X, Heart, Clapperboard, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { useAppStore } from '@/store/useAppStore'
 import type { Message, Character } from '@/types'
@@ -10,6 +10,13 @@ import { cn } from '@/lib/utils'
 import { PaymentModal } from '@/components/payment/PaymentModal'
 import BondMeter from '@/components/chat/BondMeter'
 import type { BondData } from '@/components/chat/BondMeter'
+import RoleplayPanel from '@/components/chat/RoleplayPanel'
+import {
+  detectRoleplayTrigger,
+  detectRoleplayEnd,
+  getRoleplayOpener,
+  type RoleplayPreset,
+} from '@/lib/ai/roleplay-prompts'
 
 // Extended message type used for seeded image placeholders
 interface ExtendedMessage extends Message { needsImage?: boolean }
@@ -115,6 +122,11 @@ export default function ChatInterface({ characterId, characterName, character, c
   const [tokensTotal, setTokensTotal] = useState<number>(35)
   const [checkinInjected, setCheckinInjected] = useState(false)
   const [justLevelledUp, setJustLevelledUp] = useState(false)
+  // ── Roleplay state ────────────────────────────────────────────────────────
+  const [roleplayMode, setRoleplayMode] = useState<RoleplayPreset | null>(null)
+  const [nsfwEnabled, setNsfwEnabled] = useState(false)
+  const [showRoleplay, setShowRoleplay] = useState(false)
+  const isPremium = character.is_premium === false   // treat free chars as accessible; plan check via API
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -308,10 +320,51 @@ export default function ChatInterface({ characterId, characterName, character, c
     }
   }, [character.id, chatId, addMessage, setIsGeneratingImage])
 
+  // ── Activate a roleplay preset ────────────────────────────────────────────
+  const activateRoleplay = useCallback((preset: RoleplayPreset) => {
+    setRoleplayMode(preset)
+    setShowRoleplay(false)
+    // Inject the opening scene as an assistant message
+    const opener = getRoleplayOpener(preset)
+    addMessage(chatId, {
+      id: `rp-open-${Date.now()}`,
+      chat_id: chatId,
+      role: 'assistant',
+      content: opener,
+      created_at: new Date().toISOString(),
+    })
+  }, [chatId, addMessage])
+
+  // ── End roleplay ──────────────────────────────────────────────────────────
+  const endRoleplay = useCallback(() => {
+    setRoleplayMode(null)
+    addMessage(chatId, {
+      id: `rp-end-${Date.now()}`,
+      chat_id: chatId,
+      role: 'assistant',
+      content: `*The scene fades. She steps out of character and smiles at you warmly.*
+
+"That was… something, wasn't it? I'm back — just me now. How are you feeling?" 💌`,
+      created_at: new Date().toISOString(),
+    })
+  }, [chatId, addMessage])
+
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim() || loading) return
     setInput('')
     setShowEmoji(false)
+
+    // ── Detect roleplay triggers in typed messages ────────────────────────
+    const rpTrigger = detectRoleplayTrigger(content)
+    if (rpTrigger) {
+      activateRoleplay(rpTrigger)
+      return
+    }
+    if (detectRoleplayEnd(content)) {
+      endRoleplay()
+      setRoleplayMode(null)
+      return
+    }
 
     const userMsg: Message = {
       id: `user-${Date.now()}`,
@@ -352,9 +405,12 @@ export default function ChatInterface({ characterId, characterName, character, c
         body: JSON.stringify({
           messages: historyMessages,
           characterId: character.id,
-          // Pass the real Supabase chatId if we have one, so the API saves to the right row
           chatId: chatSessions[characterId] || chatId,
           memory: charMemory,
+          // Roleplay context
+          roleplayMode,
+          nsfwEnabled,
+          isPremium,
         }),
         signal: ctrl.signal,
       })
@@ -496,6 +552,18 @@ export default function ChatInterface({ characterId, characterName, character, c
           <Link href={`/call/${character.id}`} className="p-2 rounded-xl transition-all" style={{ color: 'rgba(248,238,216,0.60)' }}>
             <Phone size={16} />
           </Link>
+          {/* Roleplay toggle */}
+          <button
+            className="p-2 rounded-xl transition-all"
+            onClick={() => setShowRoleplay(v => !v)}
+            title="Roleplay Scenes"
+            style={{
+              color: roleplayMode ? '#C4934A' : 'rgba(248,238,216,0.60)',
+              background: roleplayMode ? 'rgba(196,147,74,0.12)' : 'transparent',
+            }}
+          >
+            <Clapperboard size={16} />
+          </button>
           <button
             className="p-2 rounded-xl transition-all"
             onClick={() => setShowImagePrompt(!showImagePrompt)}
@@ -516,7 +584,20 @@ export default function ChatInterface({ characterId, characterName, character, c
         />
       </div>
 
-
+      {/* ── Roleplay Panel (slides in below BondMeter) ───────────────────── */}
+      <div className="flex-shrink-0 relative z-10">
+        <RoleplayPanel
+          activePreset={roleplayMode}
+          nsfwEnabled={nsfwEnabled}
+          isPremium={isPremium}
+          isVisible={showRoleplay}
+          characterName={characterName}
+          onSelectPreset={(preset) => activateRoleplay(preset)}
+          onToggleNSFW={() => setNsfwEnabled(v => !v)}
+          onEndRoleplay={() => { endRoleplay(); setRoleplayMode(null) }}
+          onClose={() => setShowRoleplay(false)}
+        />
+      </div>
 
       {/* ── Character info strip ───────────────────────────────────────────── */}
       <div className="flex items-center gap-2 px-4 py-2 flex-shrink-0 relative z-10"

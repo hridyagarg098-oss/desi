@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { PREMADE_CHARACTERS } from '@/types'
 import { buildSystemPrompt } from '@/lib/ai/prompts'
+import { buildRoleplayBlock, detectRoleplayEnd, type RoleplayPreset } from '@/lib/ai/roleplay-prompts'
 import { getCharacterConfig } from '@/lib/ai/chat-config'
 import { detectUserMood } from '@/lib/ai/mood-detector'
 import { checkUsageLimit, getLimitMessage, getPlanLimits, type UsageProfile } from '@/lib/payment/limits'
@@ -73,8 +74,11 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     const user = await getUserWithTimeout(supabase)
-    const { messages, characterId, chatId, memory } = await request.json()
+    const { messages, characterId, chatId, memory, roleplayMode, nsfwEnabled, isPremium: clientPremium } = await request.json()
     const clientMemoryFacts: string[] = Array.isArray(memory) ? memory.slice(0, 20) : []
+    const activeRoleplay = roleplayMode as RoleplayPreset | null
+    const isEndingRoleplay = messages?.length > 0
+      && detectRoleplayEnd(messages[messages.length - 1]?.content ?? '')
 
     // ── Find character ─────────────────────────────────────────────────────
     const character = PREMADE_CHARACTERS.find(
@@ -179,8 +183,16 @@ export async function POST(request: NextRequest) {
 
     const loveLevelName = LOVE_LEVEL_NAMES[currentLevel - 1]
 
-    // ── Build system prompt with relationship context ───────────────────────
+    // ── Build system prompt ─────────────────────────────────────────────────
     let systemPrompt = buildSystemPrompt(character.personality_type, character.name)
+
+    // ── ROLEPLAY ENGINE: inject scene block when active ────────────────────
+    if (activeRoleplay && !isEndingRoleplay) {
+      const planStr = (profile?.plan as string) ?? 'free'
+      const isPrem = clientPremium || planStr === 'premium' || planStr === 'pro' || planStr === 'trial'
+      const isNSFW = nsfwEnabled && isPrem
+      systemPrompt += buildRoleplayBlock(activeRoleplay, isNSFW, isPrem)
+    }
 
     // ── VELVET LOVE LEVEL BLOCK (injected into every prompt) ─────────────────
     // This block drives 60+ day retention. Never reveal the point system.

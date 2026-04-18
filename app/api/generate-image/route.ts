@@ -1,24 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { buildImagePrompt } from '@/lib/ai/prompts'
+import { buildImagePrompt, CHARACTER_SEEDS } from '@/lib/ai/prompts'
 import { PREMADE_CHARACTERS } from '@/types'
 import { createClient } from '@/lib/supabase/server'
 import { checkUsageLimit, type UsageProfile } from '@/lib/payment/limits'
 
 export const maxDuration = 60
 
-// ─── Prompt builder ───────────────────────────────────────────────────────────
-// Removed 500-char truncation — it was killing quality by cutting the prompt short
+// ─── Together AI — FLUX.1-schnell (sole provider) ────────────────────────────
+// Pollinations.ai and Fal.ai have been removed.
+// Together AI is the primary + only image engine.
+// Each character has a fixed seed so FLUX generates a consistent face every time.
 
-function buildEnhancedPrompt(basePrompt: string, scene: string): string {
-  const sceneText = scene ? `${scene}, ` : ''
-  // Keep the full prompt — FLUX handles long prompts well
-  return `${sceneText}${basePrompt}`.replace(/\s+/g, ' ').trim()
-}
-
-// ─── Provider 1: Together AI (FLUX.1-schnell) — best quality, fast ─────────
-async function generateWithTogether(prompt: string): Promise<string | null> {
+async function generateWithTogether(
+  prompt: string,
+  characterSeed: number
+): Promise<string | null> {
   const apiKey = process.env.TOGETHER_API_KEY
-  if (!apiKey) return null
+  if (!apiKey) {
+    console.warn('[ImageGen] TOGETHER_API_KEY is not set')
+    return null
+  }
 
   try {
     const res = await fetch('https://api.together.ai/v1/images/generations', {
@@ -34,6 +35,8 @@ async function generateWithTogether(prompt: string): Promise<string | null> {
         height: 1024,
         steps: 4,
         n: 1,
+        // Fixed seed per character = consistent face across all generations
+        seed: characterSeed,
         response_format: 'url',
       }),
       signal: AbortSignal.timeout(30000),
@@ -54,82 +57,6 @@ async function generateWithTogether(prompt: string): Promise<string | null> {
     return null
   } catch (e) {
     console.error('[ImageGen] Together AI error:', e)
-    return null
-  }
-}
-
-// ─── Provider 2: Fal.ai (FLUX.1-schnell) — ultra-fast alternative ──────────
-async function generateWithFal(prompt: string): Promise<string | null> {
-  const apiKey = process.env.FAL_API_KEY
-  if (!apiKey) return null
-
-  try {
-    // Fal.ai fast queue for Flux Schnell
-    const res = await fetch('https://fal.run/fal-ai/flux/schnell', {
-      method: 'POST',
-      headers: {
-        Authorization: `Key ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt,
-        image_size: { width: 768, height: 1024 },
-        num_inference_steps: 4,
-        num_images: 1,
-        enable_safety_checker: false,
-      }),
-      signal: AbortSignal.timeout(30000),
-    })
-
-    if (!res.ok) {
-      console.warn('[ImageGen] Fal.ai failed:', res.status)
-      return null
-    }
-
-    const data = await res.json()
-    const url = data?.images?.[0]?.url
-    if (url) {
-      console.log('[ImageGen] ✅ Fal.ai success')
-      return url
-    }
-    return null
-  } catch (e) {
-    console.error('[ImageGen] Fal.ai error:', e)
-    return null
-  }
-}
-
-// ─── Provider 3: Pollinations.ai — truly free, unlimited, no key needed ────
-async function generateWithPollinations(prompt: string): Promise<string | null> {
-  try {
-    const seed = Math.floor(Math.random() * 1000000)
-    // Use a shorter prompt for Pollinations (URL length limit)
-    const shortPrompt = prompt.slice(0, 600)
-    const encoded = encodeURIComponent(shortPrompt)
-    const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&seed=${seed}&model=flux&nologo=true&enhance=true`
-
-    console.log('[ImageGen] Calling Pollinations.ai...')
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: { Accept: 'image/*' },
-      signal: AbortSignal.timeout(55000),
-    })
-
-    if (!res.ok) {
-      console.warn('[ImageGen] Pollinations failed:', res.status)
-      return null
-    }
-
-    const contentType = res.headers.get('content-type') || ''
-    if (!contentType.startsWith('image/')) {
-      console.warn('[ImageGen] Pollinations returned non-image:', contentType)
-      return null
-    }
-
-    console.log('[ImageGen] ✅ Pollinations success')
-    return url
-  } catch (e) {
-    console.error('[ImageGen] Pollinations error:', e)
     return null
   }
 }
@@ -175,8 +102,8 @@ export async function POST(req: NextRequest) {
           return NextResponse.json(
             {
               error: check.reason === 'trial_expired'
-                ? '⏰ Aapka trial expire ho gaya! ₹20 mein dobara subscribe karo 🌸'
-                : `📸 Aaj ki photos khatam! Free mein 2 photos/day milti hain — Trial lo ₹20 mein, 6 photos milegi!`,
+                ? "Your 24-hour trial has ended. Renew for just ₹20 to keep going."
+                : `You've reached today's photo limit. Free plan includes 2 photos/day — upgrade for ₹20 to unlock 6.`,
               limitHit: check.reason,
               imagesUsed: profile.images_today,
               imagesLimit: check.limit,
@@ -193,35 +120,28 @@ export async function POST(req: NextRequest) {
     )
     if (!character) character = PREMADE_CHARACTERS[0]
 
-    const basePrompt = buildImagePrompt(character.id, customScene || '')
-    const finalPrompt = buildEnhancedPrompt(basePrompt, customScene)
+    // ── Build character-locked prompt ───────────────────────────────────────
+    // buildImagePrompt now correctly places scene BEFORE the identity descriptor
+    // so FLUX prioritises the scene context while the identity stays anchored.
+    const finalPrompt = buildImagePrompt(character.id, customScene || undefined)
 
-    // ── Generate: Together AI → Fal.ai → Pollinations ──────────────────────
-    let imageUrl: string | null = null
-    let provider = ''
+    // Resolve fixed seed — falls back to a random seed only if character is unknown
+    const characterSeed = CHARACTER_SEEDS[character.id] ?? Math.floor(Math.random() * 999999)
 
-    imageUrl = await generateWithTogether(finalPrompt)
-    if (imageUrl) { provider = 'together' }
+    console.log(`[ImageGen] Generating for character="${character.id}" seed=${characterSeed}`)
+    console.log(`[ImageGen] Prompt (first 200 chars): ${finalPrompt.slice(0, 200)}`)
 
-    if (!imageUrl) {
-      imageUrl = await generateWithFal(finalPrompt)
-      if (imageUrl) { provider = 'fal' }
-    }
-
-    if (!imageUrl) {
-      console.log('[ImageGen] Paid APIs unavailable, falling back to Pollinations...')
-      imageUrl = await generateWithPollinations(finalPrompt)
-      if (imageUrl) { provider = 'pollinations' }
-    }
+    // ── Generate via Together AI only ───────────────────────────────────────
+    const imageUrl = await generateWithTogether(finalPrompt, characterSeed)
 
     if (!imageUrl) {
       return NextResponse.json(
-        { error: 'Photo generate nahi hua jaan 🙏 Thoda wait karo, dobara try karo!' },
+        { error: "Couldn't generate the photo right now — please try again in a moment." },
         { status: 500 }
       )
     }
 
-    console.log(`[ImageGen] ✅ Image served via ${provider}`)
+    console.log('[ImageGen] ✅ Image served via Together AI')
 
     // ── Save record + increment images_today ────────────────────────────────
     if (user && profile) {
@@ -250,7 +170,9 @@ export async function POST(req: NextRequest) {
       image_url: imageUrl,
       imagesLeft,
       imagesUsed: profile ? (profile.images_today ?? 0) + 1 : null,
-      provider, // helpful for debugging
+      provider: 'together',
+      characterId: character.id,
+      seed: characterSeed,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'

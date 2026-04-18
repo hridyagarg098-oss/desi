@@ -424,41 +424,179 @@ function buildDefaultPrompt(name: string): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// IMAGE PROMPT BUILDERS
-// Returns a detailed FLUX photorealistic prompt per character
+// IMAGE CHARACTER SYSTEM
+// Per-character fixed seeds + ultra-specific face descriptors
+// The seed locks the FLUX latent space to the same face every time
+// The descriptor reinforces exact facial features so results stay consistent
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function buildImagePrompt(characterId: string, userRequest?: string): string {
-  const base = IMAGE_PROMPTS[characterId]
-  if (!base) return buildGenericImagePrompt(userRequest)
-
-  const scene = userRequest
-    ? `, ${userRequest}`
-    : ', natural candid moment, soft bokeh background, golden hour light'
-
-  return `${base}${scene}, 8k ultra-detailed photorealistic portrait, editorial fashion photography, cinematic lighting, shot on Sony A7R5 with 85mm f/1.4 lens, professional color grading`
+/** Fixed seeds per character — same seed = same face from FLUX every time */
+export const CHARACTER_SEEDS: Record<string, number> = {
+  priya:     142857,
+  kabita:    271828,
+  yuki:      314159,
+  sofia:     161803,
+  emma:      112358,
+  luna:      192837,
+  valentina: 246810,
+  mei:       369121,
+  isabella:  415926,
+  zara:      534759,
 }
 
-const IMAGE_PROMPTS: Record<string, string> = {
-  priya: `Beautiful Indian woman in her mid-twenties, South Delhi fashion-forward, wearing a deep maroon Banarasi silk saree with gold zari work, kohl-lined almond eyes, long wavy black hair with jasmine flowers, warm wheatish glowing skin, confident and slightly teasing expression, Hauz Khas Village background`,
+/**
+ * Ultra-specific face + identity descriptor per character.
+ * Structured as: [face anatomy] + [skin + hair + eyes] + [signature style] + [location vibe]
+ * Scene/activity is injected separately — never baked in here.
+ */
+const CHARACTER_IDENTITY: Record<string, string> = {
+  priya: [
+    'Beautiful Indian woman, 24 years old',
+    'oval face with sharp defined jawline, warm wheatish-golden skin with a natural glow',
+    'large almond-shaped dark brown eyes with kohl liner and long natural lashes',
+    'full lips in a warm rose-brown tone, high cheekbones with subtle blush',
+    'long wavy jet-black hair cascading past shoulders, small jasmine flowers tucked in',
+    'elegant nose with a delicate gold nose ring',
+    'deep maroon Banarasi silk saree with heavy gold zari border',
+    'South Delhi fashion editorial aesthetic, confident and teasing expression',
+    'Hauz Khas Village rooftop, golden hour string lights background',
+  ].join(', '),
 
-  kabita: `Beautiful young Nepali woman in her early twenties, golden-tan himalayan skin, soft deep almond eyes, long black hair in loose braid with a small wildflower, wearing traditional Dhaka fabric in earthy tones, serene and poetic expression, Phewa Lake Pokhara with Annapurna range in background, misty morning light`,
+  kabita: [
+    'Beautiful Nepali woman, 22 years old',
+    'soft oval face with gentle rounded features, warm golden-tan himalayan complexion',
+    'deep almond-shaped dark brown eyes with naturally long lashes, no makeup',
+    'full soft lips in a natural rose tone, serene peaceful expression',
+    'long straight black hair in a loose side braid adorned with tiny white wildflowers',
+    'wearing traditional handwoven Dhaka fabric top in earthy green and red patterns',
+    'simple silver earrings, natural mountain-girl aesthetics',
+    'Phewa Lake Pokhara setting, Annapurna range reflected in still water behind her',
+    'soft misty golden morning light, poetic and introspective expression',
+  ].join(', '),
 
-  yuki: `Beautiful Japanese woman in her early twenties, pale porcelain skin, large expressive dark eyes with subtle liner, straight jet-black hair cut blunt at shoulders, Harajuku-meets-minimalist style — white oversized jacket, colorful accessories, Shibuya Tokyo background with neon reflections, slightly cool but secretly soft expression`,
+  yuki: [
+    'Beautiful Japanese woman, 23 years old',
+    'petite symmetrical face with smooth pale porcelain skin, flawless complexion',
+    'large expressive dark doe eyes with sharp precise eyeliner, subtle shimmer',
+    'small straight nose, soft full lips in a muted berry pink tone',
+    'straight jet-black hair cut blunt at collarbone in a perfect sleek bob',
+    'Harajuku-inspired fashion: white oversized cropped jacket, colorful enamel pins',
+    'silver hoop earrings, black mini skirt, white sneakers',
+    'slightly cool expression with hidden softness behind the eyes',
+    'Shibuya Tokyo night street, neon reflections on wet pavement, cinematic glow',
+    'anime-adjacent illustration realism, vibrant saturated colors',
+  ].join(', '),
 
-  sofia: `Beautiful Brazilian woman in her mid-twenties, rich warm caramel skin, full expressive lips with natural gloss, naturally curly dark hair with volume, bright expressive dark eyes, vibrant colorful outfit, Vila Madalena São Paulo street art background, alive and joyful expression, golden sunlight`,
+  sofia: [
+    'Beautiful Brazilian woman, 25 years old',
+    'heart-shaped face with strong defined features, rich warm caramel skin glowing with health',
+    'large bright dark eyes with thick natural lashes, full expressive brows',
+    'full lips with natural deep rose gloss, radiant joyful expression',
+    'naturally voluminous curly dark brown hair falling past shoulders',
+    'vibrant off-shoulder top in tropical colors, hoop earrings, beaded bracelets',
+    'toned sun-kissed arms, confident body language',
+    'Vila Madalena São Paulo street with colorful murals mural art background',
+    'warm golden Brazilian sunlight, alive and passionate energy radiating outward',
+  ].join(', '),
 
-  emma: `Beautiful American woman in her early twenties, warm sandy golden skin with light freckles, hazel eyes, honey blonde highlights in loose waves, casual denim jacket over floral dress, warm open smile, Austin Texas Sixth Street background with string lights, girl-next-door warmth and quiet wit in her eyes`,
+  emma: [
+    'Beautiful American woman, 22 years old',
+    'oval face with a warm, open quality, warm sandy golden skin with light natural freckles across nose and cheeks',
+    'bright hazel eyes with green and amber flecks, long lashes, genuine warmth in her gaze',
+    'small straight nose, natural pink lips with a wide easy smile that reaches her eyes',
+    'honey-blonde highlights woven through loose sun-kissed beach waves',
+    'casual denim jacket over a floral sundress, simple gold chain necklace',
+    'girl-next-door authenticity with quiet wit visible in her expression',
+    'Austin Texas downtown string light background at golden hour',
+    'warm approachable natural candid photography feel',
+  ].join(', '),
 
-  luna: `Beautiful Korean woman in her mid-twenties, fair porcelain skin with natural flush, delicate monolid eyes with subtle liner, long straight black hair, K-beauty minimalist aesthetic — soft neutral tones, Han River Seoul at golden hour background, warm devoted expression, quiet inner strength visible`,
+  luna: [
+    'Beautiful Korean woman, 24 years old',
+    'delicate oval face with perfectly smooth fair porcelain skin, dewy glass-skin finish',
+    'soft monolid eyes with subtle precise liner and long natural lashes, light eye shadow',
+    'small refined nose, soft pale pink lips with a gentle devoted expression',
+    'long straight silky black hair falling past shoulders, perfectly blowdried',
+    'K-beauty minimalist aesthetic: cream knit cardigan, subtle pearl earrings',
+    'quiet inner strength and warmth radiating through composed expression',
+    'Han River Seoul at golden hour, soft city bokeh background',
+    'Korean editorial beauty photography, glass-skin lighting',
+  ].join(', '),
 
-  valentina: `Beautiful Colombian woman in her mid-twenties, golden olive warm skin, full lips, intensely dark expressive eyes, naturally curly dark hair falling over shoulders, bold colorful outfit, El Poblado Medellín background with bougainvillea, magnetic and passionate expression, fire and poetry in her gaze`,
+  valentina: [
+    'Beautiful Colombian woman, 26 years old',
+    'strong oval face with defined cheekbones, warm golden olive skin',
+    'large intensely dark expressive eyes, thick natural brows, magnetic magnetic gaze',
+    'full deep red-rose lips, strong jaw with feminine softness',
+    'naturally voluminous curly dark hair cascading dramatically over shoulders',
+    'bold colorful outfit with gold jewelry, confidence in every inch of her posture',
+    'fire and poetry simultaneously in her expression — passionate and completely alive',
+    'El Poblado Medellín background with vibrant pink bougainvillea flowers',
+    'dramatic warm evening light, Latin editorial photography',
+  ].join(', '),
 
-  mei: `Beautiful Chinese woman in her mid-twenties, fair ivory skin, sharp defined facial features, dark almond eyes with precision liner, sleek straight black hair in polished style, modern qipao-inspired fitted outfit in deep red and black, Shanghai Jing'an District background at dusk, composed and intelligent expression with hidden warmth`,
+  mei: [
+    'Beautiful Chinese woman, 25 years old',
+    'symmetrical oval face with sharp elegant bone structure, fair ivory porcelain skin',
+    'almond-shaped dark eyes with precision sharp liner, perfect arched brows',
+    'small refined nose, natural soft pink lips in a composed and controlled expression',
+    'sleek straight black hair styled in a polished high bun with face-framing side pieces',
+    'modern qipao-inspired fitted dress in deep crimson with minimal gold embroidery',
+    'composed and intellectually confident expression with hidden volcanic warmth',
+    'Shanghai Jing’an District skyline at blue hour dusk background',
+    'luxury Chinese editorial fashion photography, cool cinematic lighting',
+  ].join(', '),
 
-  isabella: `Beautiful Italian woman in her late twenties, warm olive Mediterranean skin, green-hazel expressive eyes, chestnut wavy hair falling past shoulders, effortlessly stylish Milan fashion — structured blazer, pearl earrings, Brera district Milan background with cobblestones, artistic and sensually perceptive expression, golden afternoon light`,
+  isabella: [
+    'Beautiful Italian woman, 27 years old',
+    'elegant oval face with Mediterranean bone structure, warm olive skin with golden undertones',
+    'striking green-hazel eyes with depth and artistic perceptiveness, natural lashes',
+    'slightly strong nose with character, full lips in a warm terracotta rose',
+    'chestnut wavy hair falling past shoulders with effortless natural movement',
+    'perfectly fitted Italian-cut structured camel blazer, pearl drop earrings',
+    'artistically aware sensual expression, the kind of woman who sees beauty everywhere',
+    'Brera district Milan cobblestone street with art gallery windows',
+    'golden European afternoon light, sophisticated Milan fashion editorial',
+  ].join(', '),
 
-  zara: `Beautiful Emirati-British mixed heritage woman in her late twenties, luminous golden-caramel skin, striking amber eyes, long dark waves with glossy finish, luxury global fashion — silk blouse, structured blazer, minimal gold jewelry, Downtown Dubai skyline background at magic hour, magnetic and enigmatic expression`,
+  zara: [
+    'Beautiful Emirati-British mixed heritage woman, 28 years old',
+    'striking symmetrical face with strong elegant features, luminous golden-caramel skin',
+    'large amber-brown eyes with natural intensity and worldly intelligence',
+    'refined nose, full lips in a warm nude tone, magnetic enigmatic expression',
+    'long dark hair in glossy perfectly sleek waves past mid-back',
+    'luxury minimal fashion: champagne silk blouse, structured black blazer',
+    'delicate gold chain necklace, diamond stud earrings, understated opulence',
+    'the most interesting person in any room, magnetic presence',
+    'Downtown Dubai Burj Khalifa skyline glowing at magic hour background',
+    'luxury lifestyle perfume-ad quality editorial photography',
+  ].join(', '),
+}
+
+/**
+ * Build a character-locked image prompt.
+ * Identity (face + style) is always the anchor.
+ * Scene/activity from the user’s request is surfaced naturally on top.
+ */
+export function buildImagePrompt(characterId: string, userRequest?: string): string {
+  const identity = CHARACTER_IDENTITY[characterId]
+  if (!identity) return buildGenericImagePrompt(userRequest)
+
+  const scene = userRequest?.trim()
+    ? `${userRequest.trim()}, `
+    : 'natural candid moment, soft bokeh background, golden hour light, '
+
+  return [
+    scene,
+    identity,
+    '8k ultra-detailed photorealistic portrait',
+    'editorial fashion photography',
+    'cinematic lighting',
+    'shot on Sony A7R5 85mm f/1.4',
+    'professional color grading',
+    'highly detailed skin texture',
+    'perfect facial symmetry',
+  ].join(', ')
 }
 
 function buildGenericImagePrompt(request?: string): string {

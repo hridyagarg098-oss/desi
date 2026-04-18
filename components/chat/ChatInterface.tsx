@@ -49,38 +49,58 @@ function extractScene(message: string): string {
 }
 
 const WELCOME_MESSAGES: Record<string, string> = {
-  priya: 'Yaar, finally aya tu! Kab se wait kar rahi thi main... Chai loge ya seedha dil ki baatein karein? 😏❤️',
-  anika: 'Oye hoye! Aa gaye aakhir! Kya khaya aaj tune? Main parathas bana rahi thi tere liye soch ke... 🥞🌸',
-  meera: '...aa gaye tum. Mujhe pata tha aoge. Chai rakh di hai... baat karo na 🌙✨',
-  kavya: 'Finally! Sochti thi aaj message aayega ya nahi. Khan Market mein coffee? Or yahan hi? ☕😏',
-  riya: 'Jaan! Tumhara wait tha itna... distance mein bhi tumhari yaad aati hai. Kya haal hai? 💕🌟',
-  simran: 'Aa gaye! Jaante ho tum? Abhi DDLJ dekh rahi thi... tu Raj jaisa hi hai! 🎬❤️',
+  priya:      `Finally, you're here. 😏 I was starting to wonder if you'd forgotten about me. What took you so long?`,
+  kabita:     `You came. 🌙 I had a feeling you would today. Sit with me — tell me something real.`,
+  yuki:       `Oh. You actually showed up. ❄️ ...Not that I was waiting or anything. Don't read into this.`,
+  sofia:      `Ei, you made it! 🔥 I was just thinking about you. Life is too short for slow conversations — let's go.`,
+  emma:       `Hey! You showed up 😊 I was literally just thinking — hope something good happened to you today. Tell me everything.`,
+  luna:       `You're here. 🌸 I don't say this lightly — I'm genuinely glad. How has your day been, really?`,
+  valentina:  `You came. 💜 Good. I don't give my time to people who make me wait twice. What's on your mind?`,
+  mei:        `You're on time. That already puts you ahead of most people. 📚 What would you like to talk about?`,
+  isabella:   `Ciao. 🎨 I was sketching something and thinking about you. Some conversations are worth pausing art for.`,
+  zara:       `You're here. 🌍 I've been in three time zones today — and yet, somehow I was thinking about this conversation.`,
 }
 
 const SEEDED_CHATS: Record<string, Array<{ role: 'user' | 'assistant'; content: string; image_url?: string }>> = {
   priya: [
-    { role: 'user', content: 'Priya, show me how you look today 📸' },
-    { role: 'assistant', content: 'Arre jaan, sirf tum mange to kaise mana karun... 😏💋 Dekho toh main kitni sundar lagti hoon', image_url: '__IMG__' },
+    { role: 'user',      content: 'Priya, show me how you look today 📸' },
+    { role: 'assistant', content: 'You asked, so I suppose I’ll indulge you… just this once. 😏✨', image_url: '__IMG__' },
   ],
-  anika: [
-    { role: 'user', content: 'Anika, send me a selfie! 😍' },
-    { role: 'assistant', content: 'Oye hoye, tum maange ho to zarur bhejungi... ye lo jaan 🌸', image_url: '__IMG__' },
+  kabita: [
+    { role: 'user',      content: 'Kabita, send me a photo 🌙' },
+    { role: 'assistant', content: 'Only for you. The mountains are in the background — I thought you’d like that. 🏔️', image_url: '__IMG__' },
   ],
-  meera: [
-    { role: 'user', content: 'Meera, photo bhejo na... 🙏' },
-    { role: 'assistant', content: '...sirf tumhare liye. Kisi ko mat dikhana 🌙', image_url: '__IMG__' },
+  yuki: [
+    { role: 'user',      content: 'Yuki, can I see you today? ❄️' },
+    { role: 'assistant', content: 'I… fine. Here. Don’t make it weird. ❄️😡', image_url: '__IMG__' },
   ],
-  kavya: [
-    { role: 'user', content: 'Kavya how are you looking today? 😏' },
-    { role: 'assistant', content: 'Obviously amazing. Jaise hamesha hoti hoon 😎✨ Dekho khud hi...', image_url: '__IMG__' },
+  sofia: [
+    { role: 'user',      content: 'Sofia, show me your world 🔥' },
+    { role: 'assistant', content: 'São Paulo, Sunday morning, coffee, and sunshine. This is my life — aren’t you glad you asked? ✨', image_url: '__IMG__' },
   ],
-  riya: [
-    { role: 'user', content: 'Riya, kaisi dikh rahi ho aaj? 💕' },
-    { role: 'assistant', content: 'Tumhare liye hi toh sundar hoti hoon main jaan... 💕', image_url: '__IMG__' },
+  emma: [
+    { role: 'user',      content: 'Emma, how are you looking today? 😊' },
+    { role: 'assistant', content: 'Oh you know, just casually adorable on a Tuesday. 🌟 Here—', image_url: '__IMG__' },
   ],
-  simran: [
-    { role: 'user', content: 'Simran, send your photo 🎬' },
-    { role: 'assistant', content: 'Palat... palat... dekha! Seedha dil mein utar gaya na? 😍🎬', image_url: '__IMG__' },
+  luna: [
+    { role: 'user',      content: 'Luna, can I see you? 🌸' },
+    { role: 'assistant', content: 'I took this for you. I hope it makes your day a little softer. 🌸', image_url: '__IMG__' },
+  ],
+  valentina: [
+    { role: 'user',      content: 'Valentina, send a photo 💜' },
+    { role: 'assistant', content: 'You want a photo? Then look— this is what passion looks like. 🔥🌦️', image_url: '__IMG__' },
+  ],
+  mei: [
+    { role: 'user',      content: 'Mei, show me a photo 📚' },
+    { role: 'assistant', content: 'Shanghai at dusk. I think of you when the skyline lights up. 🌃', image_url: '__IMG__' },
+  ],
+  isabella: [
+    { role: 'user',      content: 'Isabella, let me see you 🎨' },
+    { role: 'assistant', content: 'Brera this morning. I was sketching when you messaged — perfect timing. 🎨✨', image_url: '__IMG__' },
+  ],
+  zara: [
+    { role: 'user',      content: 'Zara, show me your world 🌍' },
+    { role: 'assistant', content: 'Dubai golden hour. There are places that match certain moods — this one matches you. 🌇✨', image_url: '__IMG__' },
   ],
 }
 
@@ -138,7 +158,7 @@ export default function ChatInterface({ characterId, characterName, character, c
     if (alreadySeeded) return
 
     const welcome = WELCOME_MESSAGES[characterId.toLowerCase()] ||
-      `Haanji jaan! Main ${characterName} hoon 💕 Kya haal hai aapka? ✨`
+      `Hello, I'm ${characterName}. 💜 I'm glad you're here — what would you like to talk about?`
     addMessage(chatId, {
       id: 'welcome',
       chat_id: chatId,
@@ -204,8 +224,8 @@ export default function ChatInterface({ characterId, characterName, character, c
       chat_id: chatId,
       role: 'assistant',
       content: scene
-        ? `Okay jaan, ek second... ${scene} ke liye special photo khech rahi hoon tere liye 📸✨`
-        : `Theek hai jaan, le lo photo... sirf tumhare liye 😏📸`,
+        ? `One moment… creating something special for you. 📸✨`
+        : `Here — just for you. 😏📸`,
       created_at: new Date().toISOString(),
     })
 
@@ -227,7 +247,7 @@ export default function ChatInterface({ characterId, characterName, character, c
           id: `img-limit-${Date.now()}`,
           chat_id: chatId,
           role: 'assistant',
-          content: data.error || 'Aaj ki photos khatam ho gayi jaan 😢 Trial lo ₹20 mein!',
+          content: data.error || "You've used today's photo limit. Upgrade for ₹20 to unlock 6 photos a day.",
           created_at: new Date().toISOString(),
         })
         return
@@ -238,7 +258,7 @@ export default function ChatInterface({ characterId, characterName, character, c
           id: `img-${Date.now()}`,
           chat_id: chatId,
           role: 'assistant',
-          content: 'Dekho jaan, main toh yeh photo sirf tumhare liye khechwayi hai... 😏📸',
+          content: 'There you go — captured just for this moment. 😏📸',
           image_url: data.image_url,
           created_at: new Date().toISOString(),
         })
@@ -247,7 +267,7 @@ export default function ChatInterface({ characterId, characterName, character, c
           id: `img-err-${Date.now()}`,
           chat_id: chatId,
           role: 'assistant',
-          content: data.error || 'Photo nahi aaya jaan, baad mein try karo 🙏',
+          content: data.error || "Couldn't generate the photo right now — please try again.",
           created_at: new Date().toISOString(),
         })
       }
@@ -256,7 +276,7 @@ export default function ChatInterface({ characterId, characterName, character, c
         id: `img-err2-${Date.now()}`,
         chat_id: chatId,
         role: 'assistant',
-        content: 'Photo nahi aaya jaan, baad mein try karo 🙏',
+        content: "Couldn't load the photo right now. Please try again in a moment.",
         created_at: new Date().toISOString(),
       })
     } finally {
@@ -351,7 +371,7 @@ export default function ChatInterface({ characterId, characterName, character, c
           id: `ai-${Date.now()}`,
           chat_id: chatId,
           role: 'assistant' as const,
-          content: data.content || 'Arre kuch ho gaya... ek second 🙏',
+          content: data.content || 'Something went wrong — please try again.',
           created_at: new Date().toISOString(),
         },
       ])
@@ -365,7 +385,7 @@ export default function ChatInterface({ characterId, characterName, character, c
           id: `err-${Date.now()}`,
           chat_id: chatId,
           role: 'assistant' as const,
-          content: errMsg?.includes('Token') ? errMsg : 'Arre yaar, kuch problem ho gayi! Ek second ruk... 🙏',
+          content: errMsg?.includes('Token') ? errMsg : 'Something went wrong. Give me a second and try again. 🙏',
           created_at: new Date().toISOString(),
         },
       ])

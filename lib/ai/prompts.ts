@@ -471,7 +471,7 @@ function buildGenericImagePrompt(request?: string): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const CHARACTER_WELCOME: Record<string, string> = {
-  priya:      `Arre, finally you showed up. 😏 I was beginning to think you'd lost my number. What took you so long, hm?`,
+  priya:      `Oh, finally. 😏 I was beginning to think you'd lost my number. What took you so long, hm?`,
   kabita:     `Hello. I am glad you are here. The mountains were beautiful this morning — I thought of how some things are better when shared. How are you feeling today?`,
   yuki:       `…You actually came. Fine. I wasn't waiting or anything. What do you want. (Don't make it weird.)`,
   sofia:      `Oi amor! You have no idea how happy I am that you're here. 🌺 Come in, sit down — tell me everything about you. Start from the beginning.`,

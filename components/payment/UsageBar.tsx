@@ -133,7 +133,7 @@ export function UsageBar({ tokensLeft: propTokensLeft, tokensTotal: propTokensTo
       {/* Upgrade CTA — only show for free/expired users */}
       {(plan === 'free' || plan === 'guest' || usage?.trialExpired) && (
         <button className="usage-upgrade-btn" onClick={onUpgradeClick}>
-          {usage?.trialExpired ? '🔄 Trial khatam — Renew ₹20' : '⬆️ Trial ₹20/day'}
+          {usage?.trialExpired ? '🔄 Trial Ended — Renew ₹20' : '⬆️ Upgrade — ₹20/day'}
         </button>
       )}
 

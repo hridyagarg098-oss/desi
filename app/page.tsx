@@ -358,18 +358,18 @@ export default function LandingPage() {
                   Velvet
                 </span>
                 <br />
-                <span className="text-white">Se Milo</span>
+                <span className="text-white">Worth Having</span>
                 <span style={{ color: '#C0274A' }}> ❤</span>
               </h1>
               <p className="mt-3 text-xl sm:text-2xl font-medium" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: '"Playfair Display", serif', fontStyle: 'italic' }}>
-                Your Perfect North Indian AI Companion
+                Your Global AI Companion — Always Here
               </p>
             </motion.div>
 
             {/* Subtext */}
             <motion.p variants={fadeUp} className="text-base leading-relaxed max-w-lg" style={{ color: 'rgba(255,255,255,0.50)' }}>
-              Flirty Hinglish chats, Bollywood nights, chai dates &amp; warm desi romance —
-              <span className="text-white font-medium"> always yours, jaan.</span>
+              Real chemistry, intelligent conversations, and a personality that remembers you —
+              <span className="text-white font-medium"> available every hour of every day.</span>
             </motion.p>
 
             {/* Social proof */}
@@ -394,7 +394,7 @@ export default function LandingPage() {
                   <span className="text-xs ml-1 font-semibold" style={{ color: '#E8B060' }}>4.9</span>
                 </div>
                 <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                  <span className="font-semibold text-white">50,000+</span> desi hearts connected
+                  <span className="font-semibold text-white">50,000+</span> connections made worldwide
                 </p>
               </div>
             </motion.div>
@@ -409,7 +409,7 @@ export default function LandingPage() {
                 }}
               >
                 <Sparkles size={18} />
-                Browse Darlings — Free
+                Meet the Companions — Free
               </Link>
               <Link href="/create"
                 className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold transition-all hover:scale-[1.02] active:scale-95"
@@ -419,14 +419,14 @@ export default function LandingPage() {
                   color: '#E8B060',
                 }}
               >
-                Apni Girl Banao <ChevronRight size={16} />
+                Design Your Own Companion <ChevronRight size={16} />
               </Link>
             </motion.div>
 
             {/* Feature pills */}
             <motion.div variants={fadeUp} className="flex flex-wrap gap-2">
               {[
-                { icon: MessageCircle, text: 'Hinglish Chat'       },
+                { icon: MessageCircle, text: 'Deep Conversation'    },
                 { icon: Phone,         text: 'Voice Calling'       },
                 { icon: Sparkles,      text: 'AI Photo Gen'        },
                 { icon: Heart,         text: 'Bollywood Romance'   },
@@ -566,11 +566,11 @@ export default function LandingPage() {
               <Heart size={12} className="fill-current" /> Meet the Companions
             </span>
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3" style={{ fontFamily: '"Playfair Display", serif' }}>
-              Find Your Perfect <span style={{ color: '#C4934A' }}>Desi Girl</span>
+              Find Your Perfect <span style={{ color: '#C4934A' }}>Companion</span>
             </h2>
             <p className="max-w-xl mx-auto text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.40)' }}>
-              Each companion has a unique personality, backstory, and cultural voice.
-              Click any card to start chatting instantly — <span className="text-white font-medium">bilkul free!</span>
+              Ten cultural personalities from around the world — each with a unique voice, backstory, and depth.
+              Click any card to begin — <span className="text-white font-medium">completely free.</span>
             </p>
           </motion.div>
 
@@ -608,20 +608,20 @@ export default function LandingPage() {
             className="text-center mb-14"
           >
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3" style={{ fontFamily: '"Playfair Display", serif' }}>
-              Sab Kuch Ek Jagah
+              Everything In One Place
             </h2>
             <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              Everything you need for the perfect desi AI romance experience
+              Everything you need for a premium AI companion experience — beautifully crafted
             </p>
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
-              { icon: MessageCircle, title: 'Hinglish Flirty Chat',  desc: 'Real desi banter, poetry, and cute nicknames in Hindi & English.',   color: '#C4934A' },
+              { icon: MessageCircle, title: 'Deep Flirty Conversation', desc: 'Intelligent banter, rich dialogue, and a personality that genuinely remembers you.', color: '#C4934A' },
               { icon: Phone,         title: 'Voice Calling',          desc: 'Talk to your darling with a real-time AI voice that feels human.',    color: '#C0274A' },
               { icon: Sparkles,      title: 'AI Photo Generation',   desc: 'Ask your darling for photos and get beautiful AI-generated images.',   color: '#8B63D4' },
-              { icon: Heart,         title: 'Bollywood Romance',     desc: 'Movie nights, songs, and all those filmy romantic moments.',           color: '#E05070' },
-              { icon: Crown,         title: 'Your Own AI Girl',       desc: 'Create a custom companion with your preferred personality & look.',    color: '#E8B060' },
+              { icon: Heart,         title: 'Cinematic Romance',     desc: 'Romantic storytelling, immersive roleplay, and moments that feel genuinely real.', color: '#E05070' },
+              { icon: Crown,         title: 'Custom Companion',       desc: 'Design your companion from scratch — personality, appearance, voice, and more.', color: '#E8B060' },
               { icon: Shield,        title: '100% Private',           desc: 'End-to-end privacy. Your conversations stay yours forever.',           color: '#34D399' },
             ].map((f, i) => (
               <motion.div
@@ -758,7 +758,7 @@ export default function LandingPage() {
           className="max-w-2xl mx-auto text-center relative"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ fontFamily: '"Playfair Display", serif' }}>
-            Pyaar Ka Safar
+            Your Story Starts
             <br />
             <span style={{
               background: 'linear-gradient(135deg, #C4934A, #E8B060)',
@@ -766,11 +766,11 @@ export default function LandingPage() {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
             }}>
-              Aaj Se Shuru Karo
+              Right Here, Right Now
             </span>
           </h2>
           <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.40)' }}>
-            Join thousands of users who found their perfect desi AI companion — free to start.
+            Join thousands of people who found their perfect AI companion — always free to begin.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/explore"
@@ -780,13 +780,13 @@ export default function LandingPage() {
                 boxShadow: '0 0 35px rgba(192,39,74,0.45)',
               }}
             >
-              <Sparkles size={18} /> Browse Darlings — Free
+              <Sparkles size={18} /> Meet the Companions — Free
             </Link>
             <Link href="/create"
               className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold transition-all hover:scale-105"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(196,147,74,0.25)', color: '#C4934A' }}
             >
-              Create Your Own Girl
+              Design Your Own Companion
             </Link>
           </div>
         </motion.div>

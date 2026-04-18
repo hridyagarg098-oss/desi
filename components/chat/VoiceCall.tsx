@@ -334,7 +334,7 @@ function VoiceCallInner({ character, agentId, onEnd }: VoiceCallProps) {
             style={{ background: 'rgba(220,38,38,0.85)', backdropFilter: 'blur(12px)', boxShadow: '0 0 20px rgba(220,38,38,0.5)' }}
           >
             <span className="animate-pulse">⚡</span>
-            {secondsLeft}s bachi — call khatam hone wali hai!
+            {secondsLeft}s remaining — call ending soon
           </motion.div>
         )}
       </AnimatePresence>
@@ -358,17 +358,17 @@ function VoiceCallInner({ character, agentId, onEnd }: VoiceCallProps) {
               <Heart className="w-9 h-9 text-white fill-current" />
             </motion.div>
             <h2 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: '"Playfair Display", serif' }}>
-              Free Time Khatam Hua
+              Free Time Used Up
             </h2>
             <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.50)' }}>
-              Aur baat karo — sirf ₹20 mein 5 minute ka trial lo!
+              Keep the conversation alive — upgrade for just ₹20 and get 5 full minutes.
             </p>
             <button
               onClick={() => setShowPayment(true)}
               className="px-8 py-3.5 rounded-full text-white font-bold text-sm transition-all hover:opacity-90 hover:scale-105"
               style={{ background: 'linear-gradient(135deg, #8B1538, #C4934A)', boxShadow: '0 0 30px rgba(196,147,74,0.40)' }}
             >
-              ₹20 mein Trial Lo ✨
+              Upgrade for ₹20 ✨
             </button>
           </motion.div>
         )}

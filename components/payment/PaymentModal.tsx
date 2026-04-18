@@ -70,7 +70,7 @@ export function PaymentModal({ open, reason, onClose, onSuccess }: PaymentModalP
       })
       setStep('qr')
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Kuch gadbad ho gayi 😓')
+      setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -78,7 +78,7 @@ export function PaymentModal({ open, reason, onClose, onSuccess }: PaymentModalP
 
   const submitReference = async () => {
     if (!qrData || !referenceNum.trim()) {
-      setError('UPI reference number daalo jaan!')
+      setError('Please enter your UPI reference number.')
       return
     }
     setLoading(true)
@@ -103,7 +103,7 @@ export function PaymentModal({ open, reason, onClose, onSuccess }: PaymentModalP
         pollStatus(qrData.uroPayOrderId)
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Verification nahi hua 😓')
+      setError(e instanceof Error ? e.message : 'Verification failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -118,10 +118,10 @@ export function PaymentModal({ open, reason, onClose, onSuccess }: PaymentModalP
   if (!open) return null
 
   const reasonMessages: Record<string, string> = {
-    token_limit: '💬 Aaj ke chat tokens khatam ho gaye!',
-    image_limit: '📸 Aaj ki photo limit khatam!',
-    call_limit:  '📞 Aaj ka call time khatam!',
-    trial_expired: '⏰ Aapka trial expire ho gaya!',
+    token_limit:    '💬 You’ve used today’s chat tokens.',
+    image_limit:    '📸 You’ve reached today’s photo limit.',
+    call_limit:     '📞 You’ve used today’s call time.',
+    trial_expired:  '⏰ Your trial has expired.',
   }
 
   return (
@@ -140,7 +140,7 @@ export function PaymentModal({ open, reason, onClose, onSuccess }: PaymentModalP
               <div className="modal-reason">{reasonMessages[reason]}</div>
             )}
 
-            <p className="modal-subtitle">Sirf ₹20 mein — 1 din ka full premium access!</p>
+            <p className="modal-subtitle">Just ₹20 — unlock full premium access for 24 hours.</p>
 
             <div className="plan-grid">
               <div className="plan-col plan-free">
@@ -162,7 +162,7 @@ export function PaymentModal({ open, reason, onClose, onSuccess }: PaymentModalP
               onClick={initiate}
               disabled={loading}
             >
-              {loading ? 'Loading...' : '🔒 UPI se Pay करें — ₹20'}
+              {loading ? 'Loading…' : '🔒 Pay with UPI — ₹20'}
             </button>
 
             {error && <p className="modal-error">{error}</p>}
@@ -175,8 +175,8 @@ export function PaymentModal({ open, reason, onClose, onSuccess }: PaymentModalP
         {step === 'qr' && qrData && (
           <div className="modal-step">
             <div className="modal-badge">📱</div>
-            <h2 className="modal-title">UPI se Pay Karo</h2>
-            <p className="modal-subtitle">Kisi bhi UPI app se scan karo — PhonePe, GPay, Paytm</p>
+            <h2 className="modal-title">Pay with UPI</h2>
+            <p className="modal-subtitle">Scan with any UPI app — PhonePe, Google Pay, Paytm</p>
 
             <div className="qr-wrapper">
               <img src={qrData.qrCode} alt="UPI QR Code" className="qr-image" />
@@ -184,17 +184,17 @@ export function PaymentModal({ open, reason, onClose, onSuccess }: PaymentModalP
             </div>
 
             <button className="btn-upi" onClick={openUPI}>
-              📱 UPI App Open Karo
+              📱 Open UPI App
             </button>
 
             <button
               className="btn-secondary"
               onClick={() => setStep('reference')}
             >
-              ✅ Pay kar diya — Reference Enter Karo
+              ✅ Payment done — Enter Reference Number
             </button>
 
-            <p className="modal-note">Payment ke baad UPI app mein reference number milega</p>
+            <p className="modal-note">Your UPI app shows the reference number after payment.</p>
           </div>
         )}
 
@@ -204,7 +204,7 @@ export function PaymentModal({ open, reason, onClose, onSuccess }: PaymentModalP
             <div className="modal-badge">🔢</div>
             <h2 className="modal-title">UPI Reference Number</h2>
             <p className="modal-subtitle">
-              Payment ke baad UPI app ne jo reference number diya, woh yahan likho
+              Enter the reference number shown in your UPI app after payment.
             </p>
 
             <input
@@ -217,7 +217,7 @@ export function PaymentModal({ open, reason, onClose, onSuccess }: PaymentModalP
             />
 
             {polling && (
-              <div className="polling-msg">🔄 Payment verify ho raha hai...</div>
+              <div className="polling-msg">🔄 Verifying your payment…</div>
             )}
 
             <button
@@ -225,13 +225,13 @@ export function PaymentModal({ open, reason, onClose, onSuccess }: PaymentModalP
               onClick={submitReference}
               disabled={loading || polling || !referenceNum.trim()}
             >
-              {loading ? 'Verifying...' : '✅ Verify Karo'}
+              {loading ? 'Verifying…' : '✅ Confirm Payment'}
             </button>
 
             {error && <p className="modal-error">{error}</p>}
 
             <button className="btn-link" onClick={() => setStep('qr')}>
-              ← Wapas QR Code pe jao
+              ← Back to QR Code
             </button>
           </div>
         )}
@@ -240,17 +240,17 @@ export function PaymentModal({ open, reason, onClose, onSuccess }: PaymentModalP
         {step === 'success' && (
           <div className="modal-step modal-success">
             <div className="modal-badge success-anim">🎉</div>
-            <h2 className="modal-title">Trial Activate Ho Gaya!</h2>
+            <h2 className="modal-title">Trial Activated! 🎉</h2>
             <p className="modal-subtitle">
-              Bahut badiya! Aapka 24-ghante ka premium trial shuru ho gaya.
+              Excellent! Your 24-hour premium trial is now live.
             </p>
             <div className="success-perks">
-              <div>💬 {PLAN_LIMITS.trial.tokens_per_day} tokens aaj</div>
-              <div>📸 {PLAN_LIMITS.trial.images_per_day} photos aaj</div>
-              <div>📞 {Math.floor(PLAN_LIMITS.trial.call_seconds_per_day / 60)} min call aaj</div>
+              <div>💬 {PLAN_LIMITS.trial.tokens_per_day} tokens today</div>
+              <div>📸 {PLAN_LIMITS.trial.images_per_day} photos today</div>
+              <div>📞 {Math.floor(PLAN_LIMITS.trial.call_seconds_per_day / 60)} min call today</div>
             </div>
             <button className="btn-primary" onClick={onClose}>
-              Enjoy Karo! 💕
+              Start Exploring 💫
             </button>
           </div>
         )}

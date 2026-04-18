@@ -1,5 +1,5 @@
 /**
- * DesiDarling — Plan limits
+ * Velvet — Plan limits
  * Only two plans exist: free (starter) and trial (₹20/day)
  */
 export const PLAN_LIMITS = {
@@ -80,21 +80,21 @@ export function checkUsageLimit(
 }
 
 /**
- * Hindi/English user-facing limit messages
+ * Premium English user-facing limit messages
  */
 export function getLimitMessage(reason: string, plan: Plan): string {
   const isFree = !plan || plan === 'free'
   const msgs: Record<string, string> = {
     token_limit: isFree
-      ? 'Aaj ke saare tokens khatam ho gaye jaan 😢 Sirf ₹20 mein 1 din ka trial lo — 70 tokens milenge!'
-      : 'Aaj ka trial time khatam! Kal phir milenge 🌙 Ya dobara ₹20 mein renew karo.',
+      ? "You've used today's free messages. Upgrade for just ₹20 — unlock 70 tokens for the day."
+      : "You've reached today's token limit. Come back tomorrow or renew your trial for ₹20.",
     image_limit: isFree
-      ? 'Aaj ki 2 photos ho gayi jaan 😊 Trial lo ₹20 mein — 6 photos milenge roz!'
-      : 'Aaj ki 6 photos khatam! Kal nayi photos milenge ✨',
+      ? "You've used your 2 free photos for today. Upgrade for ₹20 to get 6 photos per day."
+      : "You've reached today's photo limit. More photos available again tomorrow.",
     call_limit: isFree
-      ? 'Call time khatam jaan 😢 ₹20 mein trial lo — 5 minutes milenge!'
-      : 'Aaj ki 5 minute call khatam! Kal phir baat karte hain 💕',
-    trial_expired: '⏰ Aapka 1 din ka trial khatam ho gaya! Phir se sirf ₹20 mein renew karo 🌸',
+      ? "Your free call time is up for today. Upgrade for ₹20 to unlock 5 minutes of voice."
+      : "You've used today's voice call time. It resets at midnight — see you then.",
+    trial_expired: "Your 24-hour trial has ended. Renew for just ₹20 to keep the full experience going.",
   }
-  return msgs[reason] || 'Daily limit reached. ₹20 mein trial lo!'
+  return msgs[reason] || 'Daily limit reached. Upgrade for just ₹20.'
 }

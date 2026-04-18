@@ -113,6 +113,7 @@ export default function ChatInterface({ characterId, characterName, character, c
   const [paymentModal, setPaymentModal] = useState<{ open: boolean; reason?: string }>({ open: false })
   const [tokensLeft, setTokensLeft] = useState<number | null>(null)
   const [tokensTotal, setTokensTotal] = useState<number>(35)
+  const [checkinInjected, setCheckinInjected] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -150,7 +151,30 @@ export default function ChatInterface({ characterId, characterName, character, c
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [characterId])
 
-  // Seed welcome + demo messages once
+  // ── Fetch pending check-in (while-you-were-away message) ───────────────────
+  // After the first genuine message is seeded, check if the cron agent sent a
+  // check-in while the user was away. If so, inject it as a styled message.
+  useEffect(() => {
+    if (checkinInjected) return
+    fetch(`/api/checkin/pending?characterId=${encodeURIComponent(characterId)}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then((data: { pending?: { id: string; message: string; sentAt: string } | null } | null) => {
+        if (!data?.pending?.message) return
+        setCheckinInjected(true)
+        addMessage(chatId, {
+          id: `checkin-${data.pending.id}`,
+          chat_id: chatId,
+          role: 'assistant',
+          content: data.pending.message,
+          // Flag so ChatInterface can render with special styling
+          created_at: data.pending.sentAt,
+        })
+      })
+      .catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [characterId, chatId])
+
+  // ── Seed welcome + demo messages once ───────────────────────────────────────
   useEffect(() => {
     const alreadySeeded = chatMessages.some(m => m.id === 'welcome' || m.id.startsWith('seed-'))
     if (alreadySeeded) return
@@ -529,13 +553,34 @@ export default function ChatInterface({ characterId, characterName, character, c
                     </div>
                   ) : (
                     <>
+                      {/* Check-in badge (only shows for messages from the cron agent) */}
+                      {msg.id.startsWith('checkin-') && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          fontSize: '0.6rem',
+                          color: 'rgba(196,147,74,0.70)',
+                          marginBottom: '4px',
+                          paddingLeft: '2px',
+                        }}>
+                          <span>💌</span>
+                          <span>While you were away…</span>
+                        </div>
+                      )}
+
                       {/* Bubble */}
                       {msg.role === 'user' ? (
                         <div className="bubble-user">
                           {msg.content}
                         </div>
                       ) : (
-                        <div className="bubble-ai">
+                        <div className="bubble-ai"
+                          style={msg.id.startsWith('checkin-') ? {
+                            borderColor: 'rgba(196,147,74,0.35)',
+                            background: 'linear-gradient(135deg, rgba(139,21,56,0.55), rgba(196,147,74,0.18))',
+                          } : undefined}
+                        >
                           {msg.content}
                         </div>
                       )}
@@ -594,7 +639,7 @@ export default function ChatInterface({ characterId, characterName, character, c
             <div className="px-4 py-3 rounded-2xl rounded-tl-md flex items-center gap-2 text-sm"
               style={{ background: 'linear-gradient(135deg, rgba(139,21,56,0.50), rgba(192,39,74,0.30))', border: '1px solid rgba(139,21,56,0.30)', color: '#E8B060' }}>
               <Camera size={14} className="animate-pulse" />
-              <span>{characterName} toh photo khech rahi hai... ✨</span>
+              <span>{characterName} is preparing your photo... ✨</span>
             </div>
           </motion.div>
         )}
@@ -654,7 +699,7 @@ export default function ChatInterface({ characterId, characterName, character, c
         >
           <span style={{ color: tokensLeft <= 5 ? '#ef4444' : 'rgba(196,147,74,0.80)' }}>
             💬 {tokensLeft}/{tokensTotal} tokens
-            {tokensLeft <= 5 ? ' — jaldi khatam honge! 😢' : ' remaining'}
+            {tokensLeft <= 5 ? ' — running low!' : ' remaining'}
           </span>
           {tokensLeft <= 5 && (
             <button

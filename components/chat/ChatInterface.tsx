@@ -114,6 +114,7 @@ export default function ChatInterface({ characterId, characterName, character, c
   const [tokensLeft, setTokensLeft] = useState<number | null>(null)
   const [tokensTotal, setTokensTotal] = useState<number>(35)
   const [checkinInjected, setCheckinInjected] = useState(false)
+  const [justLevelledUp, setJustLevelledUp] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -386,9 +387,21 @@ export default function ChatInterface({ characterId, characterName, character, c
       }
 
       // Update bond data in store + local state for instant UI
+      // affectionPoints feeds the Love Meter; levelledUp fires the celebration banner
       if (data.bond) {
-        setBond(characterId, data.bond)
-        setBondLocal(data.bond)
+        const bondUpdate: BondData = {
+          level:           data.bond.level,
+          messageCount:    data.bond.messageCount,
+          daysChatted:     data.bond.daysChatted,
+          streak:          data.bond.streak,
+          affectionPoints: data.bond.affectionPoints ?? 0,
+        }
+        setBond(characterId, bondUpdate)
+        setBondLocal(bondUpdate)
+        if (data.bond.levelledUp) {
+          setJustLevelledUp(true)
+          setTimeout(() => setJustLevelledUp(false), 4500)
+        }
       }
 
       const store = useAppStore.getState()
@@ -499,6 +512,7 @@ export default function ChatInterface({ characterId, characterName, character, c
           bond={bond}
           memories={charMemory}
           characterName={characterName}
+          justLevelledUp={justLevelledUp}
         />
       </div>
 
@@ -523,7 +537,7 @@ export default function ChatInterface({ characterId, characterName, character, c
       {/* ── Hint bar ─────────────────────────────────────────────────────────── */}
       <div className="text-center py-1.5 text-[11px] flex-shrink-0 relative z-10"
         style={{ background: 'rgba(196,147,74,0.04)', color: 'rgba(196,147,74,0.65)', borderBottom: '1px solid rgba(196,147,74,0.08)' }}>
-        ✨ Say &quot;Send me a photo&quot; or &quot;Photo bhejo&quot; to get a picture
+        ✨ Say &quot;Send me a photo&quot; to get a picture — your bond grows with every message 💌
       </div>
 
       {/* ── Messages ─────────────────────────────────────────────────────────── */}

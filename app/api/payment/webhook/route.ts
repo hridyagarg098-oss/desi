@@ -106,5 +106,5 @@ export async function POST(request: NextRequest) {
 
 // UROPay pings GET to verify webhook URL is reachable
 export async function GET() {
-  return NextResponse.json({ status: 'webhook active', service: 'DesiDarling' })
+  return NextResponse.json({ status: 'webhook active', service: 'Velvet' })
 }

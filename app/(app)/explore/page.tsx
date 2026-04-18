@@ -7,13 +7,15 @@ import { Heart, MessageCircle, Sparkles, Filter, Star, Flame, Mic } from 'lucide
 import { PREMADE_CHARACTERS, type Character } from '@/types'
 import { cn } from '@/lib/utils'
 
-const FILTERS = ['All', 'Free', 'Premium', 'Sassy', 'Romantic', 'Warm', 'Bollywood']
+const FILTERS = ['All', 'Free', 'Premium', 'Intense', 'Romantic', 'Playful', 'Asia', 'Latin', 'Europe', 'Americas']
 
-const SKIN_EMOJIS: Record<Character['skin_tone'], string> = {
-  fair: '🌸',
+const SKIN_EMOJIS: Record<string, string> = {
+  ivory:    '❄️',
+  fair:     '🌸',
   wheatish: '🌿',
-  golden: '✨',
-  dusky: '🌙',
+  golden:   '✨',
+  caramel:  '🌊',
+  dusky:    '🌙',
 }
 
 function TiltCard({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -56,7 +58,14 @@ export default function ExplorePage() {
     if (activeFilter === 'All') return true
     if (activeFilter === 'Free') return !c.is_premium
     if (activeFilter === 'Premium') return c.is_premium
-    return c.personality_tags.some(t => t.toLowerCase().includes(activeFilter.toLowerCase()))
+    if (activeFilter === 'Intense') return c.heat_level >= 4
+    if (activeFilter === 'Romantic') return ['devoted_partner', 'long_distance_lover', 'intense_romance'].includes(c.relationship_vibe)
+    if (activeFilter === 'Playful') return ['casual_flirt', 'playful_tease', 'best_friend_crush'].includes(c.relationship_vibe)
+    if (activeFilter === 'Asia') return ['priya', 'kabita', 'yuki', 'luna', 'mei'].includes(c.id)
+    if (activeFilter === 'Latin') return ['sofia', 'valentina'].includes(c.id)
+    if (activeFilter === 'Europe') return ['isabella', 'zara'].includes(c.id)
+    if (activeFilter === 'Americas') return ['emma', 'sofia', 'valentina'].includes(c.id)
+    return true
   })
 
   return (
@@ -77,10 +86,10 @@ export default function ExplorePage() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-6 sm:mb-10">
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
             <span style={{ background: 'linear-gradient(135deg, #FFF1E6, #F59E0B)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Explore Darlings
+              Meet the Companions
             </span>
           </h1>
-          <p className="text-white/40 text-xs sm:text-sm">Find your perfect desi companion — or create your own ✨</p>
+          <p className="text-white/40 text-xs sm:text-sm">10 personalities from around the world — find yours, or build your own ✨</p>
         </motion.div>
 
         {/* Filters */}
@@ -131,9 +140,9 @@ export default function ExplorePage() {
           <div>
             <h3 className="font-bold text-white mb-1 flex items-center gap-2">
               <Sparkles size={16} className="text-[#F59E0B]" />
-              Create Your Custom Darling
+              Create Your Custom Companion
             </h3>
-            <p className="text-sm text-white/45">Build her from scratch — personality, outfit, voice, and more.</p>
+            <p className="text-sm text-white/45">Design her from the ground up — personality, appearance, voice, and more.</p>
           </div>
           <Link
             href="/create"
@@ -216,9 +225,9 @@ function CharacterCard({
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-        {/* Skin tone badge */}
+        {/* Skin tone / nationality badge */}
         <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs text-white/80 font-medium">
-          {SKIN_EMOJIS[c.skin_tone]} {c.skin_tone}
+          {c.nationality}
         </div>
 
         {/* Online indicator */}

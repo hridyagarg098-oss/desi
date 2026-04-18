@@ -1,65 +1,104 @@
-/**
- * Per-character AI generation settings.
- * Different temperatures make Kavya sharp/controlled and Simran spontaneous.
- * Different maxTokens let Riya write poetic paragraphs and Kavya stay punchy.
- */
-export interface CharacterChatConfig {
-  temperature: number   // 0-1, lower = more focused/sharp, higher = more spontaneous
-  maxTokens: number     // response length budget
-  style: 'dramatic' | 'warm' | 'poetic' | 'sharp' | 'devotional' | 'filmy'
+// ─── Velvet AI — Per-Character Config ────────────────────────────────────────
+// Controls AI generation parameters tuned to each character's voice.
+// temperature: expressiveness/randomness (0.0–1.0)
+// maxTokens: response length budget
+
+import type { PersonalityType } from '@/types'
+
+interface CharacterConfig {
+  temperature: number
+  maxTokens: number
+  topP: number
+  presencePenalty: number
 }
 
-export const CHARACTER_CHAT_CONFIG: Record<string, CharacterChatConfig> = {
-  // Priya — South Delhi Bollywood heroine. Dramatic, intense. Needs to be controlled but expressive.
-  priya: {
+const CONFIGS: Record<PersonalityType, CharacterConfig> = {
+  // Priya — filmy, dramatic, expressive. Needs some randomness for quotable lines.
+  bollywood_heroine: {
     temperature: 0.88,
-    maxTokens: 280,
-    style: 'dramatic',
-  },
-
-  // Anika — Punjabi foodie, warm and nurturing. Consistent, predictable in the best way.
-  anika: {
-    temperature: 0.84,
     maxTokens: 300,
-    style: 'warm',
+    topP: 0.95,
+    presencePenalty: 0.5,
   },
 
-  // Meera — Jaipur poetess, mysterious. Needs unpredictability for her depth to show.
-  meera: {
-    temperature: 0.93,
-    maxTokens: 350,
-    style: 'poetic',
-  },
-
-  // Kavya — Sharp startup girl, Delhi GenZ. Short, punchy, controlled. Low temp = precision.
-  kavya: {
-    temperature: 0.79,
+  // Kabita — poetic, deliberate, measured. Low temp for consistency of voice.
+  nepali_poetess: {
+    temperature: 0.72,
     maxTokens: 220,
-    style: 'sharp',
+    topP: 0.90,
+    presencePenalty: 0.3,
   },
 
-  // Riya — Long-distance romantic. Writes long poetic paragraphs. High tokens for depth.
-  riya: {
+  // Yuki — short bursts, witty, unpredictable tsundere swings.
+  japanese_tsundere: {
+    temperature: 0.85,
+    maxTokens: 200,
+    topP: 0.92,
+    presencePenalty: 0.6,
+  },
+
+  // Sofia — expressive, passionate, longer romantic messages.
+  brazilian_latina: {
     temperature: 0.90,
+    maxTokens: 360,
+    topP: 0.95,
+    presencePenalty: 0.4,
+  },
+
+  // Emma — casual, witty, natural. Needs higher temp for spontaneity.
+  american_sweetheart: {
+    temperature: 0.85,
+    maxTokens: 280,
+    topP: 0.95,
+    presencePenalty: 0.5,
+  },
+
+  // Luna — attentive, measured, emotionally precise.
+  korean_devotee: {
+    temperature: 0.75,
+    maxTokens: 280,
+    topP: 0.90,
+    presencePenalty: 0.3,
+  },
+
+  // Valentina — intense, passionate, rich emotional language.
+  colombian_firecracker: {
+    temperature: 0.92,
     maxTokens: 380,
-    style: 'devotional',
+    topP: 0.96,
+    presencePenalty: 0.45,
   },
 
-  // Simran — DDLJ dreamer, spontaneous, dramatic. High creativity needed.
-  simran: {
-    temperature: 0.95,
+  // Mei — precise, dry, controlled. Low temp for consistency.
+  chinese_intellectual: {
+    temperature: 0.70,
+    maxTokens: 240,
+    topP: 0.88,
+    presencePenalty: 0.35,
+  },
+
+  // Isabella — lyrical, philosophical, unhurried. Moderate temp, longer budget.
+  italian_muse: {
+    temperature: 0.82,
+    maxTokens: 400,
+    topP: 0.93,
+    presencePenalty: 0.4,
+  },
+
+  // Zara — sophisticated, sensual, precise. Low temp, selective response.
+  global_elite: {
+    temperature: 0.78,
     maxTokens: 300,
-    style: 'filmy',
+    topP: 0.91,
+    presencePenalty: 0.45,
   },
 }
 
-/** Fallback config for custom characters */
-export const DEFAULT_CHAT_CONFIG: CharacterChatConfig = {
-  temperature: 0.88,
-  maxTokens: 300,
-  style: 'warm',
-}
-
-export function getCharacterConfig(characterId: string): CharacterChatConfig {
-  return CHARACTER_CHAT_CONFIG[characterId.toLowerCase()] ?? DEFAULT_CHAT_CONFIG
+export function getCharacterConfig(type: PersonalityType): CharacterConfig {
+  return CONFIGS[type] ?? {
+    temperature: 0.80,
+    maxTokens: 280,
+    topP: 0.93,
+    presencePenalty: 0.4,
+  }
 }

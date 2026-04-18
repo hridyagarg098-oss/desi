@@ -39,7 +39,7 @@ export default function AgeGatePage() {
           >
             {/* Logo */}
             <div className="text-5xl mb-4">💕</div>
-            <h1 className="text-3xl font-bold text-maroon-800 mb-2">DesiDarling.ai</h1>
+            <h1 className="text-3xl font-bold text-maroon-800 mb-2">Velvet</h1>
             <div className="w-16 h-px bg-gold-600 mx-auto mb-6 opacity-60" />
 
             {/* Warning */}
@@ -51,7 +51,7 @@ export default function AgeGatePage() {
             </div>
 
             <p className="text-maroon-800/60 text-sm leading-relaxed mb-8">
-              DesiDarling.ai is an AI companion platform designed for adults 18 years and older.
+              Velvet is an AI companion platform designed for adults 18 years and older.
               Content is romantic and mature in nature. Please confirm your age to continue.
             </p>
 

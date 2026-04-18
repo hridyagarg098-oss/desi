@@ -9,7 +9,7 @@ const FEATURES_FREE = [
   '35 chat tokens / day',
   '2 image generations / day',
   '25 seconds voice call / day',
-  'All premade darlings',
+  'All all companions',
   'Basic Hinglish mode',
 ]
 
@@ -23,7 +23,7 @@ const FEATURES_TRIAL = [
   '70 chat tokens for the day',
   '6 image generations / day',
   '5 minutes voice call / day',
-  'All premade darlings',
+  'All all companions',
   'Priority AI response',
   'Smart Hinglish memory',
 ]
@@ -58,7 +58,7 @@ export default function PricingPage() {
             </span>
             {' '}
             <span style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Darling Plan
+              Velvet Plan
             </span>
           </h1>
           <p className="text-white/40 text-sm">Pyaar ka subscription — sirf ₹20 mein premium experience 💛</p>

@@ -11,17 +11,17 @@ export default function MyDarlingsPage() {
   return (
     <div className="px-4 sm:px-6 py-8 pb-24 lg:pb-8 max-w-5xl mx-auto">
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-3xl font-bold text-maroon-800 mb-1">My Darlings</h1>
+        <h1 className="text-3xl font-bold text-maroon-800 mb-1">My Companions</h1>
         <p className="text-maroon-800/55">Your personal companions, always here for you.</p>
       </motion.div>
 
       {chars.length === 0 ? (
         <div className="card p-12 text-center">
           <div className="w-16 h-16 rounded-2xl mb-4 mx-auto flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #8B1538, #C4934A)' }}><Heart size={28} className="text-white" /></div>
-          <h3 className="text-xl font-bold text-maroon-800 mb-2">No darlings yet, jaan</h3>
-          <p className="text-maroon-800/50 text-sm mb-6">Start chatting with premade darlings or create your own.</p>
+          <h3 className="text-xl font-bold text-maroon-800 mb-2">No companions yet</h3>
+          <p className="text-maroon-800/50 text-sm mb-6">Start chatting with all companions or create your own.</p>
           <div className="flex gap-3 justify-center">
-            <Link href="/explore" className="btn-ghost">Explore Darlings</Link>
+            <Link href="/explore" className="btn-ghost">Discover Companions</Link>
             <Link href="/create" className="btn-primary"><Sparkles size={14} /> Create One</Link>
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function MyDarlingsPage() {
             <Link href="/explore">
               <div className="card p-5 flex items-center justify-center gap-3 border-dashed border-2 border-ivory-300 hover:border-maroon-200 cursor-pointer h-full min-h-[80px]">
                 <Heart size={18} className="text-maroon-800/30" />
-                <span className="text-sm font-medium text-maroon-800/40">Add a darling</span>
+                <span className="text-sm font-medium text-maroon-800/40">Add a companion</span>
               </div>
             </Link>
           </motion.div>

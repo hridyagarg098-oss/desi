@@ -169,7 +169,7 @@ export default function SettingsPage() {
           >
             <p className="text-xs text-white/20 flex items-center justify-center gap-1.5">
               <Sparkles size={10} className="text-[#F59E0B]/40" />
-              DesiDarling.ai v1.0
+              Velvet v1.0
               <span className="text-white/10">·</span>
               Made with
               <Heart size={9} className="text-red-500/50 fill-current" />

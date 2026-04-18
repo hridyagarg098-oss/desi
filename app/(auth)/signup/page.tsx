@@ -264,7 +264,7 @@ export default function SignupPage() {
               </div>
             </div>
             <span className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif", color: '#F5ECD5' }}>
-              DesiDarling<span style={{ color: '#F59E0B' }}>.ai</span>
+              Velvet<span style={{ color: '#F59E0B' }}>.ai</span>
             </span>
           </Link>
           <p className="mt-2 text-sm" style={{ color: 'rgba(245,236,213,0.5)' }}>
@@ -285,7 +285,7 @@ export default function SignupPage() {
         >
           <div className="mb-6">
             <h1 className="text-2xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif", color: '#F5ECD5' }}>
-              Join DesiDarling ✨
+              Join Velvet ✨
             </h1>
             <p className="text-sm" style={{ color: 'rgba(245,236,213,0.5)' }}>
               Create your account to meet your AI companion

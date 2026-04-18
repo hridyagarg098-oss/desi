@@ -19,15 +19,15 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'DesiDarling.ai — Your Perfect North Indian AI Girlfriend',
+  title: 'Velvet — AI Companions Worth Remembering',
   description:
-    'Meet your Desi Darling — flirty Hinglish chats, Bollywood nights, chai dates & warm desi romance. The most premium Indian AI companion experience.',
-  keywords: ['AI girlfriend', 'desi AI', 'Indian AI companion', 'Hinglish chat', 'AI chat India'],
+    'Meet Velvet companions from around the world — deeply personal, culturally authentic AI conversations that feel real. Available 24/7.',
+  keywords: ['AI companion', 'AI girlfriend', 'Velvet AI', 'AI chat', 'virtual companion', 'AI relationship'],
   openGraph: {
-    title: 'DesiDarling.ai — Your Perfect North Indian AI Girlfriend',
-    description: 'Warm Hinglish chats, Bollywood romance, and late-night chai dates — always yours.',
+    title: 'Velvet — AI Companions Worth Remembering',
+    description: 'Deeply personal, culturally authentic AI companions. Available 24/7.',
     type: 'website',
-    locale: 'en_IN',
+    locale: 'en_US',
   },
   manifest: '/manifest.json',
 }

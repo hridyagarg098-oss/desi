@@ -193,7 +193,7 @@ export async function POST(req: NextRequest) {
     )
     if (!character) character = PREMADE_CHARACTERS[0]
 
-    const basePrompt = buildImagePrompt(character, '')
+    const basePrompt = buildImagePrompt(character.id, customScene || '')
     const finalPrompt = buildEnhancedPrompt(basePrompt, customScene)
 
     // ── Generate: Together AI → Fal.ai → Pollinations ──────────────────────

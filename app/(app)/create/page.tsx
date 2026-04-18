@@ -10,19 +10,25 @@ import type { BuilderState, SkinTone, PersonalityType, RelationshipVibe } from '
 const STEPS = ['Appearance', 'Personality', 'Name & Voice', 'Relationship']
 
 const SKIN_TONES: { value: SkinTone; label: string; emoji: string; color: string }[] = [
-  { value: 'fair', label: 'Fair', emoji: '🌸', color: '#FDDCDC' },
+  { value: 'ivory',    label: 'Ivory',    emoji: '❄️', color: '#F5EDE8' },
+  { value: 'fair',     label: 'Fair',     emoji: '🌸', color: '#FDDCDC' },
   { value: 'wheatish', label: 'Wheatish', emoji: '🌿', color: '#E8C49A' },
-  { value: 'golden', label: 'Golden', emoji: '✨', color: '#D4A055' },
-  { value: 'dusky', label: 'Dusky', emoji: '🌙', color: '#8B5E3C' },
+  { value: 'golden',   label: 'Golden',   emoji: '✨', color: '#D4A055' },
+  { value: 'caramel',  label: 'Caramel',  emoji: '🌊', color: '#B87040' },
+  { value: 'dusky',    label: 'Dusky',    emoji: '🌙', color: '#7A4F35' },
 ]
 
 const PERSONALITIES: { value: PersonalityType; label: string; desc: string; emoji: string }[] = [
-  { value: 'sassy_delhi', label: 'Sassy Delhi Girl', desc: 'Sharp, witty, always in control', emoji: '👑' },
-  { value: 'warm_punjabi', label: 'Warm Punjabi Bahu', desc: 'Caring, affectionate, food-lover', emoji: '🤗' },
-  { value: 'bollywood_heroine', label: 'Bollywood Heroine', desc: 'Filmy, dramatic, romantic', emoji: '🎭' },
-  { value: 'teasing_caring', label: 'Teasing & Caring', desc: 'Playful tension, deep love', emoji: '😏' },
-  { value: 'playful_values', label: 'Modern Desi', desc: 'Fun, modern, family-loving', emoji: '💃' },
-  { value: 'romantic_longdistance', label: 'Long-Distance Lover', desc: 'Devoted, poetic, warm', emoji: '🌹' },
+  { value: 'bollywood_heroine',     label: 'Bollywood Heroine',    desc: 'Filmy, dramatic, passionately romantic',  emoji: '🎭' },
+  { value: 'nepali_poetess',        label: 'Mountain Poetess',     desc: 'Gentle, spiritual, poetically deep',       emoji: '🏔️' },
+  { value: 'japanese_tsundere',     label: 'Tsundere',             desc: 'Cold outside, devastatingly warm inside',  emoji: '❄️' },
+  { value: 'brazilian_latina',      label: 'Brazilian Flame',      desc: 'Passionate, bold, alive in every moment',  emoji: '🔥' },
+  { value: 'american_sweetheart',   label: 'American Sweetheart',  desc: 'Witty, warm, girl-next-door energy',       emoji: '🌟' },
+  { value: 'korean_devotee',        label: 'Korean Devotee',       desc: 'Patient, deeply loyal, emotionally precise', emoji: '🌸' },
+  { value: 'colombian_firecracker', label: 'Colombian Firecracker',desc: 'Intense, magnetic, loves completely',      emoji: '💜' },
+  { value: 'chinese_intellectual',  label: 'Intellectual',         desc: 'Sharp, dry humor, rewards loyalty',        emoji: '📚' },
+  { value: 'italian_muse',          label: 'Italian Muse',         desc: 'Lyrical, sensual, artistically deep',      emoji: '🎨' },
+  { value: 'global_elite',          label: 'Global Elite',         desc: 'Multilingual, mysterious, worldly',        emoji: '🌍' },
 ]
 
 const OUTFITS = [
@@ -35,28 +41,32 @@ const OUTFITS = [
 ]
 
 const VIBES: { value: RelationshipVibe; label: string; desc: string }[] = [
-  { value: 'casual_flirt', label: 'Casual Flirt', desc: 'Light, fun, no pressure' },
-  { value: 'best_friend_crush', label: 'Best Friend Crush', desc: 'Always there + butterflies' },
-  { value: 'long_distance_lover', label: 'Long-Distance Lover', desc: 'Miss each other, treasure every word' },
-  { value: 'intense_romance', label: 'Intense Romance', desc: 'Deep, passionate, all-in' },
+  { value: 'casual_flirt',     label: 'Casual Flirt',     desc: 'Light, fun, no pressure' },
+  { value: 'best_friend_crush',label: 'Best Friend Crush',desc: 'Always there + butterflies' },
+  { value: 'long_distance_lover', label: 'Long-Distance',  desc: 'Miss each other, treasure every word' },
+  { value: 'intense_romance',  label: 'Intense Romance',   desc: 'Deep, passionate, all-in' },
+  { value: 'playful_tease',    label: 'Playful Tease',     desc: 'Banter, games, heat with humor' },
+  { value: 'devoted_partner',  label: 'Devoted Partner',   desc: 'Steady, loyal, forever-energy' },
 ]
 
 const VOICES = [
-  { id: 'desi_warm_01', label: 'Priya', desc: 'Warm Delhi accent' },
-  { id: 'desi_warm_02', label: 'Anika', desc: 'Punjabi softness' },
-  { id: 'desi_warm_03', label: 'Meera', desc: 'Melodic Rajasthani' },
-  { id: 'desi_warm_04', label: 'Kavya', desc: 'Modern urban' },
+  { id: 'velvet_priya',     label: 'Priya',     desc: 'Warm Delhi accent' },
+  { id: 'velvet_yuki',      label: 'Yuki',      desc: 'Soft Tokyo lilt' },
+  { id: 'velvet_sofia',     label: 'Sofia',     desc: 'Brazilian rhythm' },
+  { id: 'velvet_luna',      label: 'Luna',      desc: 'Seoul sweetness' },
+  { id: 'velvet_isabella',  label: 'Isabella',  desc: 'Italian warmth' },
+  { id: 'velvet_emma',      label: 'Emma',      desc: 'American natural' },
 ]
 
 const defaultState: BuilderState = {
-  skinTone: 'wheatish',
-  hairStyle: 'long_wavy_jasmine',
-  eyeStyle: 'kohl_almond',
+  skinTone: 'golden',
+  hairStyle: 'long_waves',
+  eyeStyle: 'expressive',
   outfitPreset: 'banarasi_silk_saree',
-  personalityTypes: ['sassy_delhi'],
+  personalityTypes: ['bollywood_heroine'],
   personalitySliders: { flirty: 70, caring: 60, playful: 75, mysterious: 40 },
   name: '',
-  voiceId: 'desi_warm_01',
+  voiceId: 'velvet_priya',
   backstory: '',
   relationshipVibe: 'casual_flirt',
   heatLevel: 3,
@@ -96,7 +106,7 @@ export default function CreatePage() {
     <div className="min-h-screen bg-ivory-gradient px-4 py-8 pb-24 lg:pb-8 max-w-3xl mx-auto">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-3xl font-bold text-maroon-800 mb-1">Create Your Darling ✨</h1>
+        <h1 className="text-3xl font-bold text-maroon-800 mb-1">Create Your Companion ✨</h1>
         <p className="text-maroon-800/55">Build your perfect desi companion from scratch.</p>
       </motion.div>
 
@@ -326,7 +336,7 @@ export default function CreatePage() {
         ) : (
           <button onClick={handleCreate} disabled={loading || !form.name} className="btn-gold flex-1 py-3.5">
             {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-            {loading ? 'Creating your darling...' : 'Create My Darling ✨'}
+            {loading ? 'Creating your companion...' : 'Create My Companion ✨'}
           </button>
         )}
       </div>

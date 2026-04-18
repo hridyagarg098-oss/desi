@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     const merchantOrderId = `DD_TRIAL_${user.id.slice(0, 8)}_${Date.now()}`
-    const customerName    = (profile as { full_name?: string } | null)?.full_name || 'DesiDarling User'
+    const customerName    = (profile as { full_name?: string } | null)?.full_name || 'Velvet User'
 
     // Create UROPay order — returns QR code for UPI payment
     const order = await generateOrder({
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       amount:          20,  // ₹20 trial
       customerName,
       customerEmail:   user.email || '',
-      transactionNote: 'DesiDarling Premium Trial — 1 Day',
+      transactionNote: 'Velvet Premium Trial — 1 Day',
     })
 
     if (!order) {

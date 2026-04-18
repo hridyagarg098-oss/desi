@@ -109,7 +109,7 @@ export function Sidebar({ user: initialUser }: SidebarProps) {
           <div>
             <div className="font-bold text-[15px] leading-none text-white tracking-tight"
               style={{ fontFamily: '"Playfair Display", serif' }}>
-              DesiDarling
+              Velvet
             </div>
             <div className="text-[9px] font-semibold tracking-[0.2em] uppercase mt-0.5"
               style={{ color: '#C4934A' }}>

@@ -42,10 +42,10 @@ export async function createTrialOrder(params: {
     order_id: orderId,
     amount: 2000, // ₹20 in paise
     currency: 'INR',
-    description: 'DesiDarling Premium Trial — 1 Day',
+    description: 'Velvet Premium Trial — 1 Day',
     customer: {
       email: params.userEmail,
-      name: params.userName || 'DesiDarling User',
+      name: params.userName || 'Velvet User',
     },
     callback_url: `${APP_URL}/api/payment/callback`,
     webhook_url: `${APP_URL}/api/payment/webhook`,

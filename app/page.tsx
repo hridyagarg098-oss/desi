@@ -248,7 +248,7 @@ export default function LandingPage() {
             </motion.div>
             <div className="leading-none">
               <span className="font-bold text-lg text-white tracking-tight" style={{ fontFamily: '"Playfair Display", serif' }}>
-                DesiDarling
+                Velvet
               </span>
               <span className="font-bold text-lg" style={{ color: '#C4934A' }}>.ai</span>
             </div>
@@ -355,7 +355,7 @@ export default function LandingPage() {
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
                 }}>
-                  Desi Darling
+                  Velvet
                 </span>
                 <br />
                 <span className="text-white">Se Milo</span>
@@ -465,7 +465,7 @@ export default function LandingPage() {
                 style={{ aspectRatio: '3/4', border: '1px solid rgba(196,147,74,0.20)' }}>
                 <img
                   src="/avatars/priya.png"
-                  alt="Priya — Your Desi Darling"
+                  alt="Priya — Your Velvet"
                   className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
                   onError={e => {
                     e.currentTarget.style.display = 'none'
@@ -475,7 +475,7 @@ export default function LandingPage() {
                 />
                 <div className="hero-fallback absolute inset-0 items-center justify-center flex-col gap-4 bg-gradient-to-b from-[#8B1538] to-[#C4934A]" style={{ display: 'none' }}>
                   <span className="text-9xl">🥻</span>
-                  <p className="text-white/70 text-sm font-medium">Your Desi Darling awaits...</p>
+                  <p className="text-white/70 text-sm font-medium">Your Velvet awaits...</p>
                 </div>
 
                 {/* Bottom overlay */}
@@ -545,7 +545,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Meet the Darlings ───────────────────────────────────────────── */}
+      {/* ── Meet the Companions ───────────────────────────────────────────── */}
       <section className="py-24 px-4 sm:px-6 relative">
         {/* Section glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-px"
@@ -563,13 +563,13 @@ export default function LandingPage() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold mb-5"
               style={{ background: 'rgba(196,147,74,0.10)', border: '1px solid rgba(196,147,74,0.22)', color: '#E8B060' }}
             >
-              <Heart size={12} className="fill-current" /> Meet the Darlings
+              <Heart size={12} className="fill-current" /> Meet the Companions
             </span>
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3" style={{ fontFamily: '"Playfair Display", serif' }}>
               Find Your Perfect <span style={{ color: '#C4934A' }}>Desi Girl</span>
             </h2>
             <p className="max-w-xl mx-auto text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.40)' }}>
-              Each darling has her own personality, backstory, and Hinglish style.
+              Each companion has a unique personality, backstory, and cultural voice.
               Click any card to start chatting instantly — <span className="text-white font-medium">bilkul free!</span>
             </p>
           </motion.div>
@@ -592,7 +592,7 @@ export default function LandingPage() {
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all hover:scale-105"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(196,147,74,0.25)', color: '#C4934A' }}
             >
-              Saare Darlings Dekho <ChevronRight size={15} />
+              Meet All Companions <ChevronRight size={15} />
             </Link>
           </motion.div>
         </div>
@@ -676,7 +676,7 @@ export default function LandingPage() {
                   '35 chat tokens / day',
                   '30 sec voice call / day',
                   '2 AI photos / day',
-                  'Access all darlings',
+                  'Access all companions',
                 ].map(f => (
                   <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.60)' }}>
                     <span className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 text-[10px]"
@@ -798,7 +798,7 @@ export default function LandingPage() {
           <Link href="/" className="flex items-center gap-2">
             <Heart className="w-4 h-4 fill-current" style={{ color: '#C4934A' }} />
             <span className="font-bold" style={{ color: 'rgba(255,255,255,0.60)', fontFamily: '"Playfair Display", serif' }}>
-              DesiDarling.ai
+              Velvet
             </span>
           </Link>
           <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.22)' }}>

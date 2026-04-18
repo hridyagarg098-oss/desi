@@ -9,9 +9,9 @@ import { createClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
 
 const BASE_TABS = [
-  { href: '/explore',     icon: Compass,   label: 'Explore'  },
+  { href: '/explore',     icon: Compass,   label: 'Discover' },
   { href: '/create',      icon: Sparkles,  label: 'Create'   },
-  { href: '/my-darlings', icon: Heart,     label: 'Darlings' },
+  { href: '/my-darlings', icon: Heart,     label: 'Saved'    },
 ]
 
 // Pages that have their own full-screen UI — hide the tab bar so it doesn't cover their input

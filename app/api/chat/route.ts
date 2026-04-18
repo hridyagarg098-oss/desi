@@ -119,13 +119,13 @@ export async function POST(request: NextRequest) {
     )
 
     // ── Build system prompt with mood awareness + memory ──────────────────────
-    let systemPrompt = buildSystemPrompt(character, moodCtx)
+    let systemPrompt = buildSystemPrompt(character.personality_type, character.name)
     if (memoryFacts.length > 0) {
       systemPrompt += `\n\nUSER MEMORY (things you remember about this user — reference naturally):\n${memoryFacts.map((f, i) => `${i + 1}. ${f}`).join('\n')}`
     }
 
     // ── Get character-specific AI params ─────────────────────────────────────
-    const chatConfig = getCharacterConfig(character.id)
+    const chatConfig = getCharacterConfig(character.personality_type)
 
     // ── Persist chat + user message ────────────────────────────────────────────
     let currentChatId = chatId
